@@ -10,7 +10,7 @@ from modules.swaps.module import interface_swaps
 from modules.transfer.module import interface_transfer
 from scripts.layer_zero.config import LZ_SCRIPT_USDT_AMOUNT
 from scripts.layer_zero.module import script_usdv_layer_zero
-from scripts.orbiter.config import ETH_AMOUNT
+from config.orbiter_config  import ETH_AMOUNT
 from scripts.orbiter.module import script_orbiter_eth
 
 if __name__ == '__main__':

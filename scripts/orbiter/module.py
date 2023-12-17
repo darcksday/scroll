@@ -10,7 +10,7 @@ from modules.orbiter_bridge.functions import orbiter_eth_bridge
 from modules.transfer.functions import map_recipients, transfer
 from web3 import Web3
 from scripts.functions import *
-from scripts.orbiter.config import ETH_AMOUNT, NETWORKS, ADDITIONAL_FUNCTIONS
+from config.orbiter_config  import *
 
 
 def script_orbiter_eth():
@@ -62,12 +62,11 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
         params = ['linea', bridge_network]
         run_script_one(orbiter_eth_bridge, item['private_key'], 'linea', str(amount), params)
 
-
         # RUN ADDITIONAL FUNCTION
         web3_random = Web3(Web3.HTTPProvider(CHAINS[bridge_network]['rpc']))
         if bridge_network in ADDITIONAL_FUNCTIONS:
             amount = check_wait_web3_balance(web3_random, bridge_network, wallet_address, '', amount * 0.98)
-            run_multiple(ADDITIONAL_FUNCTIONS[bridge_network], bridge_network,[item])
+            run_multiple(ADDITIONAL_FUNCTIONS[bridge_network], bridge_network, [item])
 
         # BRIDGE FROM RANDOM NETWORK TO LINEA
         amount = check_wait_web3_balance(web3_random, bridge_network, wallet_address, '', amount * 0.98)
@@ -76,12 +75,22 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
         amount = amount - get_min_balance(bridge_network)
         run_script_one(orbiter_eth_bridge, item['private_key'], bridge_network, str(amount), params2)
 
-    # ------------------ Withdraw to OKX ------------------
     amount = check_wait_web3_balance(web3_linea, 'linea', wallet_address, '', amount * 0.98)
     amount = amount - get_min_balance('linea')
-    sleeping(MIN_SLEEP, MAX_SLEEP)
-    cprint("/-- Withdraw to OKX", "blue")
-    transfer(web3_linea, item['private_key'], recipient_wallet, 'linea', '', amount)
+
+    if END_NETWORK:
+        web3 = Web3(Web3.HTTPProvider(CHAINS[END_NETWORK]['rpc']))
+        params3 = ['linea', END_NETWORK]
+        run_script_one(orbiter_eth_bridge, item['private_key'], 'linea', str(amount), params3)
+        sleeping(MIN_SLEEP, MAX_SLEEP)
+        cprint("/-- Withdraw to OKX", "blue")
+        transfer(web3, item['private_key'], recipient_wallet, END_NETWORK, '', amount)
+
+    else:
+        # ------------------ Withdraw to OKX ------------------
+        sleeping(MIN_SLEEP, MAX_SLEEP)
+        cprint("/-- Withdraw to OKX", "blue")
+        transfer(web3_linea, item['private_key'], recipient_wallet, 'linea', '', amount)
 
     # ----------- Check OKX subAccount balances -------------
     while True:
@@ -101,5 +110,5 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
                         account.transfer("ETH", acc_balance, config[f'OKX_SUB{sub_account_num}_NAME'], 'master')
                         time.sleep(2)
                         break
-        sleeping(MIN_SLEEP*2, MAX_SLEEP*2)
+        sleeping(MIN_SLEEP * 2, MAX_SLEEP * 2)
         continue
