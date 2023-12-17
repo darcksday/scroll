@@ -68,9 +68,6 @@ if __name__ == '__main__':
                 break
 
 
-            elif option == '5':
-                interface_lendings()
-                break
 
             elif option == '6':
                 interface_contracts()
@@ -91,7 +88,7 @@ if __name__ == '__main__':
                 break
 
             elif option == '10':
-                # script_orbiter_usdt()
+                run_multiple(USE_FUNCTIONS,'scroll')
                 break
 
 
