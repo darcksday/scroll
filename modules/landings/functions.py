@@ -159,7 +159,7 @@ def withdraw_eth_layerbank(web3, private_key, value=0):
             'chainId': web3.eth.chain_id
         }
 
-        contract_txn=contract.functions.redeemUnderlying(
+        contract_txn=contract.functions.redeemToken(
             web3.to_checksum_address(LAYERBANK_WETH_CONTRACT),
             amount
 

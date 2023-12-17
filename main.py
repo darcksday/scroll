@@ -67,6 +67,11 @@ if __name__ == '__main__':
                 interface_swaps()
                 break
 
+
+            elif option == '5':
+                interface_lendings()
+                break
+
             elif option == '6':
                 interface_contracts()
                 break
