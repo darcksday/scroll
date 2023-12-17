@@ -8,7 +8,7 @@ from modules.run_layer_zero.functions import stargate_bridge_usdv
 from modules.transfer.functions import map_recipients, transfer
 from web3 import Web3
 from scripts.functions import *
-from scripts.layer_zero.config import *
+from config.lz_config  import *
 
 
 def script_usdv_layer_zero():

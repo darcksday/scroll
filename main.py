@@ -8,7 +8,7 @@ from modules.orbiter_bridge.module import interface_orbiter_bridge
 from modules.run_layer_zero.module import interface_usdv
 from modules.swaps.module import interface_swaps
 from modules.transfer.module import interface_transfer
-from scripts.layer_zero.config import LZ_SCRIPT_USDT_AMOUNT
+from config.lz_config  import *
 from scripts.layer_zero.module import script_usdv_layer_zero
 from config.orbiter_config  import ETH_AMOUNT
 from scripts.orbiter.module import script_orbiter_eth
