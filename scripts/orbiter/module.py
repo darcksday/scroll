@@ -83,6 +83,11 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
         params3 = ['linea', END_NETWORK]
         run_script_one(orbiter_eth_bridge, item['private_key'], 'linea', str(amount), params3)
         sleeping(MIN_SLEEP, MAX_SLEEP)
+        amount = check_wait_web3_balance(web3, END_NETWORK, wallet_address, '', amount * 0.98)
+        amount = amount - get_min_balance(END_NETWORK)
+
+
+
         cprint("/-- Withdraw to OKX", "blue")
         transfer(web3, item['private_key'], recipient_wallet, END_NETWORK, '', amount)
 
