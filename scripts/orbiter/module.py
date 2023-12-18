@@ -48,8 +48,8 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
     # ------------------ Withdraw ------------------
     cprint(f"/-- Withdraw {amount} to wallet: [{item['index']}]{wallet_address}", "blue")
 
-    call_exchange_withdraw(wallet_address, round(amount + 0.0002, 4), 'ETH', 'Linea', 'okx')
-    sleeping(MIN_SLEEP, MAX_SLEEP)
+    # call_exchange_withdraw(wallet_address, round(amount + 0.0002, 4), 'ETH', 'Linea', 'okx')
+    # sleeping(MIN_SLEEP, MAX_SLEEP)
 
     # ------------------ Start Bridge ------------------
     random.shuffle(NETWORKS)
@@ -78,7 +78,7 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
     amount = check_wait_web3_balance(web3_linea, 'linea', wallet_address, '', amount * 0.98)
     amount = amount - get_min_balance('linea')
 
-    if END_NETWORK:
+    if END_NETWORK=='arbitrum' or END_NETWORK=='optimism':
         web3 = Web3(Web3.HTTPProvider(CHAINS[END_NETWORK]['rpc']))
         params3 = ['linea', END_NETWORK]
         run_script_one(orbiter_eth_bridge, item['private_key'], 'linea', str(amount), params3)
