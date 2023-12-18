@@ -48,8 +48,8 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
     # ------------------ Withdraw ------------------
     cprint(f"/-- Withdraw {amount} to wallet: [{item['index']}]{wallet_address}", "blue")
 
-    # call_exchange_withdraw(wallet_address, round(amount + 0.0002, 4), 'ETH', 'Linea', 'okx')
-    # sleeping(MIN_SLEEP, MAX_SLEEP)
+    call_exchange_withdraw(wallet_address, round(amount + 0.0002, 4), 'ETH', 'Linea', 'okx')
+    sleeping(MIN_SLEEP, MAX_SLEEP)
 
     # ------------------ Start Bridge ------------------
     random.shuffle(NETWORKS)
