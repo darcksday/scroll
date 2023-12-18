@@ -6,6 +6,7 @@ ETH_AMOUNT = 1.97
 
 NETWORKS=[
     'zksync',
+    'zksync',
     'scroll',
     # 'nova',
     'polygon_zkevm',
@@ -15,12 +16,6 @@ NETWORKS=[
 ADDITIONAL_FUNCTIONS={
     'zksync':[
         [supply_eth_eralend, withdraw_eth_eralend],
-    ],
-    'scroll':[
-        [supply_eth_layerbank, withdraw_eth_layerbank],
-    ],
-    'polygon_zkevm':[
-        [supply_eth_0vix, withdraw_supply_eth_0vix],
     ],
 
 
