@@ -14,16 +14,17 @@ def orbiter_eth_bridge(web3, private_key: str, _amount: float, from_chain: str, 
 
     # Amount
     balance = 0
-    min_balance=get_min_balance(from_chain)
     if not _amount:
         balance = get_token_balance(web3, wallet, '', True)
 
-    if balance > min_balance:
+    if balance > MIN_BALANCE[from_chain]:
         # Increase amount to cover gas fees
-        amount = balance - min_balance
+        amount = balance - MIN_BALANCE[from_chain]
         cprint(f'/-- Amount: {amount} ETH', 'green')
     else:
         amount = _amount
+
+    amount += 0.00071
 
     if amount >= ORBITER_MIN_AMOUNT:
         amount = __get_orbiter_eth_value(amount, to_chain)
@@ -35,7 +36,7 @@ def orbiter_eth_bridge(web3, private_key: str, _amount: float, from_chain: str, 
             'chainId': chain_id,
             'nonce': nonce,
             'from': wallet,
-            'to': '0xe4edb277e41dc89ab076a1f049f4a3efa700bce8',
+            'to': web3.to_checksum_address('0xe4edb277e41dc89ab076a1f049f4a3efa700bce8'),
             'value': value,
             'gasPrice': 0,
         }
