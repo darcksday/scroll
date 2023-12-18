@@ -35,7 +35,7 @@ def orbiter_eth_bridge(web3, private_key: str, _amount: float, from_chain: str, 
             'chainId': chain_id,
             'nonce': nonce,
             'from': wallet,
-            'to': '0x80C67432656d59144cEFf962E8fAF8926599bCF8',
+            'to': '0xe4edb277e41dc89ab076a1f049f4a3efa700bce8',
             'value': value,
             'gasPrice': 0,
         }
