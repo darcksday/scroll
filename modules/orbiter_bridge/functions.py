@@ -6,7 +6,7 @@ from web3.middleware import construct_sign_and_send_raw_middleware
 from web3.middleware import geth_poa_middleware
 
 
-def orbiter_eth_bridge(web3, private_key: str, _amount: float, from_chain: str, to_chain: str):
+def orbiter_eth_bridge(web3, private_key: str, _amount, from_chain: str, to_chain: str):
     account = web3.eth.account.from_key(private_key)
     wallet = account.address
 
