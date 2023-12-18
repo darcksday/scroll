@@ -28,6 +28,8 @@ ADDITIONAL_FUNCTIONS={
 
 }
 
-END_NETWORK='arbitrum'
+# arbitrum or optimism
+
+END_NETWORK=''
 
 
