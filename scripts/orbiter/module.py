@@ -60,7 +60,7 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
 
         # BRIDGE FROM LINEA TO RANDOM NETWORK
         params = ['linea', bridge_network]
-        run_script_one(orbiter_eth_bridge, item['private_key'], 'linea', str(amount), params)
+        run_script_one(orbiter_eth_bridge, item['private_key'], 'linea', amount, params)
 
         # RUN ADDITIONAL FUNCTION
         web3_random = Web3(Web3.HTTPProvider(CHAINS[bridge_network]['rpc']))
@@ -73,7 +73,7 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
         params2 = [bridge_network, 'linea']
         #  balance left on random network
         amount = amount - get_min_balance(bridge_network)
-        run_script_one(orbiter_eth_bridge, item['private_key'], bridge_network, str(amount), params2)
+        run_script_one(orbiter_eth_bridge, item['private_key'], bridge_network, amount, params2)
 
     amount = check_wait_web3_balance(web3_linea, 'linea', wallet_address, '', amount * 0.98)
     amount = amount - get_min_balance('linea')
@@ -81,7 +81,7 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
     if END_NETWORK=='arbitrum' or END_NETWORK=='optimism':
         web3 = Web3(Web3.HTTPProvider(CHAINS[END_NETWORK]['rpc']))
         params3 = ['linea', END_NETWORK]
-        run_script_one(orbiter_eth_bridge, item['private_key'], 'linea', str(amount), params3)
+        run_script_one(orbiter_eth_bridge, item['private_key'], 'linea', amount, params3)
         sleeping(MIN_SLEEP, MAX_SLEEP)
         amount = check_wait_web3_balance(web3, END_NETWORK, wallet_address, '', amount * 0.98)
         amount = amount - get_min_balance(END_NETWORK)
