@@ -1,14 +1,7 @@
-import datetime
-import string
-from faker import Faker
-
-from web3.logs import DISCARD
-
 from helpers.settings_helper import get_random_proxy
 from helpers.web3_helper import *
 from config.settings import *
 from helpers.functions import int_to_wei, sleeping, wei_to_int, get_min_balance
-from eth_abi import encode
 
 from modules.swaps.config import *
 
@@ -222,3 +215,60 @@ def get_min_amounts_out_space(contract, from_token: str, to_token: str, amount: 
         ]
     ).call()
     return int(min_amount_out[1] - (min_amount_out[1] / 100 * slippage))
+
+
+def mint_origin_nft(web3, private_key, _amount=0):
+    chain = 'scroll'
+    address_contract = web3.to_checksum_address(NFT_ORIGINS_CONTRACT)
+    wallet = web3.eth.account.from_key(private_key).address
+    cprint(f'/-- Wallet {wallet} --> Mint Origin NFT', 'green')
+
+    params={'address':wallet}
+    metadata, proof = origin_nft_request(params)
+
+    cprint(f'/-- Rarity {int(metadata.get("rarityData", 0), 16)} ', 'blue')
+
+
+    contract = web3.eth.contract(address=address_contract, abi=NFT_ORGINS_ABI)
+    contract_txn = contract.functions.mint(
+        wallet,
+        (
+            metadata.get("deployer"),
+            metadata.get("firstDeployedContract"),
+            metadata.get("bestDeployedContract"),
+            int(metadata.get("rarityData", 0), 16),
+        ),
+        proof
+
+
+    ).build_transaction(
+        {
+            'from': wallet,
+            'nonce': web3.eth.get_transaction_count(wallet),
+            'value': 0,
+            'gasPrice': 0,
+            'gas': 0,
+        }
+    )
+
+    contract_txn = add_gas_price(web3, contract_txn, chain)
+    contract_txn = add_gas_limit(web3, contract_txn, chain)
+    tx_hash = sign_tx(web3, contract_txn, private_key)
+    return tx_hash
+
+
+def origin_nft_request(params, retry=0):
+    proxies = get_random_proxy()
+    url = f"https://nft.scroll.io/p/{params['address']}.json"
+
+    response_req = requests.get(url=url, params=[], proxies=proxies)
+    if response_req.status_code == 200:
+        response = response_req.json()
+        if 'metadata' in response:
+            return response["metadata"], response["proof"]
+
+    if retry < MAX_RETRIES:
+        cprint(f'error: status code {response_req.status_code}, retry...', 'red')
+        return origin_nft_request(params, retry + 1)
+    else:
+        raise Exception(f'SKIP. Responce error')
