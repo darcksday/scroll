@@ -12,7 +12,7 @@ ORBITER_AMOUNT = {
     'starknet': 0.000000000000009004,
     'linea': 0.000000000000009023,
     'scroll':0.000000000000009019,
-    'base':0.000000000000009021,
+    'zkfair':0.000000000000009038,
 }
 
 ORBITER_AMOUNT_STR = {
@@ -27,8 +27,7 @@ ORBITER_AMOUNT_STR = {
     'starknet': '9004',
     'linea': '9023',
     "scroll": "9019",
-    "base": "9021",
-
+    "zkfair": "9038",
 }
 
 CONTRACTS_ORBITER_TO_STARKNET = {
@@ -44,6 +43,6 @@ CONTRACTS_ORBITER_TO_STARKNET = {
     'linea': '',
 }
 
-ORBITER_MIN_STABLE_TRANSFER = 3
+ORBITER_MIN_STABLE_TRANSFER = 1
 
 ABI_ORBITER_TO_STARKNET = '[{"inputs":[{"internalType":"address payable","name":"_to","type":"address"},{"internalType":"bytes","name":"_ext","type":"bytes"}],"name":"transfer","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"contract IERC20","name":"_token","type":"address"},{"internalType":"address","name":"_to","type":"address"},{"internalType":"uint256","name":"_amount","type":"uint256"},{"internalType":"bytes","name":"_ext","type":"bytes"}],"name":"transferERC20","outputs":[],"stateMutability":"nonpayable","type":"function"}]'

@@ -19,6 +19,6 @@ def interface_check_balance():
         balance = get_token_balance(web3, wallet_address, contract_address, True)
         symbol = get_token_symbol(web3, network, contract_address)
 
-        cprint(f'Wallet {wallet_address}', 'green')
+        cprint(f'Wallet [{private_key["index"]+1}]{wallet_address}', 'green')
         cprint(f'Balance: {balance} {symbol}', 'green')
         cprint(f'---', 'green')

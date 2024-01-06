@@ -2,6 +2,7 @@ from config.multiple_routes import USE_FUNCTIONS
 from helpers.cli import *
 from helpers.factory import run_multiple, run_script
 from modules.balance.module import interface_check_balance
+from modules.claim.module import interface_zkfair
 from modules.contracts.module import interface_contracts
 from modules.exchange_withdraw.module import interface_exchange_withdraw
 from modules.orbiter_bridge.module import interface_orbiter_bridge
@@ -40,6 +41,7 @@ if __name__ == '__main__':
             cprint(f'9. Orbiter: Bridge {ETH_AMOUNT}ETH: OKX->[LINEA->RANDOM NETWORKS->LINEA]->OKX', 'yellow')
 
             cprint(f'10. Mint origin nft', 'yellow')
+            cprint(f'11. ZkFair', 'yellow')
 
 
             # cprint(f'10. Orbiter: Bridge {USDT_AMOUNT}USDC: OKX->OP[LINEA->RANDOM NETWORKS->LINEA]->OP->OKX', 'yellow')
@@ -94,6 +96,11 @@ if __name__ == '__main__':
 
             elif option == '10':
                 run_script(mint_origin_nft, 'scroll', 0,[])
+                break
+
+
+            elif option == '11':
+                interface_zkfair()
                 break
 
 

@@ -1,12 +1,13 @@
 import decimal
 from helpers.web3_helper import *
 from modules.orbiter_bridge.config import *
-from helpers.functions import int_to_wei, get_min_balance
+from helpers.functions import int_to_wei
 from web3.middleware import construct_sign_and_send_raw_middleware
 from web3.middleware import geth_poa_middleware
+from modules.transfer.functions import map_recipients
 
 
-def orbiter_eth_bridge(web3, private_key: str, _amount, from_chain: str, to_chain: str):
+def orbiter_eth_bridge(web3, private_key: str, _amount: float, from_chain: str, to_chain: str):
     account = web3.eth.account.from_key(private_key)
     wallet = account.address
 
@@ -14,17 +15,17 @@ def orbiter_eth_bridge(web3, private_key: str, _amount, from_chain: str, to_chai
 
     # Amount
     balance = 0
-    min_balance = get_min_balance(from_chain)
-
     if not _amount:
         balance = get_token_balance(web3, wallet, '', True)
 
-    if balance > min_balance:
+    if balance > MIN_BALANCE[from_chain]:
         # Increase amount to cover gas fees
-        amount = balance - min_balance
+        amount = balance - MIN_BALANCE[from_chain]
         cprint(f'/-- Amount: {amount} ETH', 'green')
     else:
         amount = _amount
+
+    amount += 0.00071
 
     if amount >= ORBITER_MIN_AMOUNT:
         amount = __get_orbiter_eth_value(amount, to_chain)
@@ -52,10 +53,7 @@ def orbiter_eth_bridge(web3, private_key: str, _amount, from_chain: str, to_chai
 
 def orbiter_token_bridge(web3, private_key: str, _amount: float, from_chain: str, to_chain: str, token_address: str):
     account = web3.eth.account.from_key(private_key)
-    web3.middleware_onion.add(construct_sign_and_send_raw_middleware(account))
-    web3.middleware_onion.inject(geth_poa_middleware, layer=0)
-    web3.eth.default_account = account.address
-
+    wallet=account.address
     cprint(f'/-- Orbiter Token Bridge: {from_chain} => {to_chain} for {account.address} -->', 'green')
     token_contract, token_decimal, symbol = check_data_token(web3, token_address)
 
@@ -63,7 +61,7 @@ def orbiter_token_bridge(web3, private_key: str, _amount: float, from_chain: str
     if not _amount:
         balance = get_token_balance(web3, account.address, token_address, False)
         # left some amount for next orbiter amount update
-        amount = wei_to_int(int(balance * 0.99995), token_decimal)
+        amount = wei_to_int(int(balance * 0.995), token_decimal)
         cprint(f'/-- Amount: {amount} {symbol}', 'green')
     else:
         amount = _amount
@@ -76,13 +74,34 @@ def orbiter_token_bridge(web3, private_key: str, _amount: float, from_chain: str
         else:
             raise Exception(f'Unsupported token decimal: {token_decimal}')
 
+        # allowance_amount = check_allowance(web3, token_address, account.address, '0x41d3D33156aE7c62c094AAe2995003aE63f587B3')
+        # if amount > allowance_amount:
+        #     cprint(f'/-- Approve token: {symbol}', 'green')
+        #     approve_token(web3, private_key, from_chain, token_address, '0x41d3D33156aE7c62c094AAe2995003aE63f587B3')
+        #     sleeping(5, 10)
+
         value = int_to_wei(orbiter_amount, token_decimal)
         token_contract = web3.eth.contract(address=web3.to_checksum_address(token_address), abi=get_erc20_abi())
+
+        tx = {
+            'from': wallet,
+            'chainId': web3.eth.chain_id,
+            'gasPrice': 0,
+            'gas': 0,
+            'nonce': web3.eth.get_transaction_count(wallet),
+        }
+
+
         transaction = token_contract.functions.transfer(
             '0x41d3D33156aE7c62c094AAe2995003aE63f587B3',
             value
-        ).transact({"from": account.address})
-        tx_hash = transaction.hex()
+        ).build_transaction(tx)
+
+        transaction = add_gas_price(web3, transaction, from_chain)
+        transaction = add_gas_limit(web3, transaction, from_chain)
+
+
+        tx_hash = sign_tx(web3, transaction, private_key)
         return tx_hash
     else:
         raise Exception(
