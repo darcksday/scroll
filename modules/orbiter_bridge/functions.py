@@ -1,7 +1,7 @@
 import decimal
 from helpers.web3_helper import *
 from modules.orbiter_bridge.config import *
-from helpers.functions import int_to_wei
+from helpers.functions import int_to_wei, get_min_balance
 from web3.middleware import construct_sign_and_send_raw_middleware
 from web3.middleware import geth_poa_middleware
 from modules.transfer.functions import map_recipients
@@ -18,9 +18,11 @@ def orbiter_eth_bridge(web3, private_key: str, _amount: float, from_chain: str, 
     if not _amount:
         balance = get_token_balance(web3, wallet, '', True)
 
-    if balance > MIN_BALANCE[from_chain]:
+    min_balance = get_min_balance(from_chain)
+
+    if balance > min_balance:
         # Increase amount to cover gas fees
-        amount = balance - MIN_BALANCE[from_chain]
+        amount = balance - min_balance
         cprint(f'/-- Amount: {amount} ETH', 'green')
     else:
         amount = _amount
@@ -53,7 +55,7 @@ def orbiter_eth_bridge(web3, private_key: str, _amount: float, from_chain: str, 
 
 def orbiter_token_bridge(web3, private_key: str, _amount: float, from_chain: str, to_chain: str, token_address: str):
     account = web3.eth.account.from_key(private_key)
-    wallet=account.address
+    wallet = account.address
     cprint(f'/-- Orbiter Token Bridge: {from_chain} => {to_chain} for {account.address} -->', 'green')
     token_contract, token_decimal, symbol = check_data_token(web3, token_address)
 
@@ -91,7 +93,6 @@ def orbiter_token_bridge(web3, private_key: str, _amount: float, from_chain: str
             'nonce': web3.eth.get_transaction_count(wallet),
         }
 
-
         transaction = token_contract.functions.transfer(
             '0x41d3D33156aE7c62c094AAe2995003aE63f587B3',
             value
@@ -99,7 +100,6 @@ def orbiter_token_bridge(web3, private_key: str, _amount: float, from_chain: str
 
         transaction = add_gas_price(web3, transaction, from_chain)
         transaction = add_gas_limit(web3, transaction, from_chain)
-
 
         tx_hash = sign_tx(web3, transaction, private_key)
         return tx_hash
