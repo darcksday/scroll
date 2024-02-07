@@ -8,6 +8,10 @@ USE_SHUFFLE = True
 CHECK_GWEI  = True
 MAX_GWEI    = 55
 
+# IN %
+SLIPPAGE=1
+
+
 # False or '2023-08-15 22:36' format
 SCHEDULE_TIME = False
 

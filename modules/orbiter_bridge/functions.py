@@ -1,7 +1,9 @@
 import decimal
+
+from helpers.settings_helper import get_random_proxy
 from helpers.web3_helper import *
 from modules.orbiter_bridge.config import *
-from helpers.functions import int_to_wei, get_min_balance
+from helpers.functions import int_to_wei, get_min_balance, api_call
 from web3.middleware import construct_sign_and_send_raw_middleware
 from web3.middleware import geth_poa_middleware
 from modules.transfer.functions import map_recipients
@@ -130,3 +132,25 @@ def __get_orbiter_token_value(base_num, chain):
     result_str = '{:.6f}'.format(result_dec.quantize(decimal.Decimal('0.000001')))
     result_str = result_str[:-4] + orbiter_str
     return decimal.Decimal(result_str)
+
+
+def claim_points(address):
+
+
+
+    url='https://api.orbiter.finance/points_system/user/card/draw'
+    params={'address': address}
+    proxies = get_random_proxy()
+
+
+
+    requests.get('https://api.orbiter.finance/points_system/v2/user/points',params=params,headers=None, proxies=proxies)
+    requests.get('https://api.orbiter.finance/points_system/user/nfts',params=params,headers=None, proxies=proxies)
+    requests.get('https://api.orbiter.finance/points_system/user/cards',params=params,headers=None, proxies=proxies)
+
+
+
+    response = requests.post(url, json=params, headers=None, proxies=proxies)
+
+    print(response.json())
+    return response

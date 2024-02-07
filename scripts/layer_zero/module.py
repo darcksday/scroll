@@ -4,7 +4,7 @@ from helpers.web3_helper import check_wait_web3_balance
 from modules.exchange_withdraw.cli import *
 from modules.exchange_withdraw.functions import call_exchange_withdraw
 from modules.run_layer_zero.config import *
-from modules.run_layer_zero.functions import stargate_bridge_usdv
+from modules.run_layer_zero.functions import stargate_bridge_usdv, stargate_send_usdv
 from modules.transfer.functions import map_recipients, transfer
 from web3 import Web3
 from scripts.functions import *
@@ -42,6 +42,8 @@ def script_usdv_layer_zero():
 
 
 def run_usdv_one_wallet(web3_bsc, web3_arbitrum, private_key, recipient_wallet, wallet_num):
+    web3_polygon = Web3(Web3.HTTPProvider(CHAINS['polygon']['rpc']))
+
     amount = round(LZ_SCRIPT_USDT_AMOUNT - random.uniform(0, 10), 2)
     # ------------------ Withdraw ------------------
     wallet_address = web3_bsc.eth.account.from_key(private_key).address
@@ -55,14 +57,22 @@ def run_usdv_one_wallet(web3_bsc, web3_arbitrum, private_key, recipient_wallet, 
 
     sleeping(2, 3)
 
-    params = ['arbitrum', 'bsc', ARB_USDT_ADDRESS]
+    params = ['arbitrum', 'polygon', ARB_USDT_ADDRESS]
 
     run_script_one(stargate_bridge_usdv, private_key, 'arbitrum', 0, params)
 
 
-    # ------------------ Check BSC balance ------------------
+    # ------------------ Check Polygon balance ------------------
+    amount = check_wait_web3_balance(web3_polygon, 'polygon', wallet_address, USDV_TOKEN_ADDRESS['polygon'], amount)
+    sleeping(2, 3)
+
+    params = ['polygon', 'bsc', USDV_TOKEN_ADDRESS['polygon']]
+
+    run_script_one(stargate_send_usdv, private_key, 'polygon', 0, params)
+
     amount = check_wait_web3_balance(web3_bsc, 'BSC', wallet_address, USDV_TOKEN_ADDRESS['bsc'], amount)
     sleeping(2, 3)
+
 
     # ------------------ Withdraw to Bitget ------------------
     cprint("/-- Withdraw to Bitget", "blue")

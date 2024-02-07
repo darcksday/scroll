@@ -91,7 +91,7 @@ def add_gas_price(web3, contract_txn, chain=''):
         elif chain == 'goerly':
             contract_txn['gasPrice'] = int(web3.eth.gas_price * 2)
         elif chain == 'bsc':
-            contract_txn['gasPrice'] = int(2000000000)
+            contract_txn['gasPrice'] = int(1000000000)
         else:
             contract_txn['gasPrice'] = int(web3.eth.gas_price)
 

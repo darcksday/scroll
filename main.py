@@ -5,9 +5,9 @@ from modules.balance.module import interface_check_balance
 from modules.claim.module import interface_zkfair
 from modules.contracts.module import interface_contracts
 from modules.exchange_withdraw.module import interface_exchange_withdraw
+from modules.functions.module import interface_others
 from modules.orbiter_bridge.module import interface_orbiter_bridge
 from modules.run_layer_zero.module import interface_usdv
-from modules.swaps.functions import mint_origin_nft
 from modules.swaps.module import interface_swaps
 from modules.transfer.module import interface_transfer
 from config.lz_config  import *
@@ -24,9 +24,10 @@ if __name__ == '__main__':
             cprint(f'2. Transfer Tokens', 'yellow')
             cprint(f'3. Exchange Withdraw', 'yellow')
 
-            cprint(f'-------- BRIDGE/SWAP --------', 'blue')
+            cprint(f'-------- BRIDGE/SWAP/NFT/LEND/etc --------', 'blue')
             cprint(f'4. Orbiter Bridge', 'yellow')
-            cprint(f'5. Swaps In dev...', 'yellow')
+            cprint(f'5. Swaps on Dex', 'yellow')
+            cprint(f'10. Nft/Lendings/DMAIL/etc', 'yellow')
 
             cprint(f'-------- Own Contracts --------', 'blue')
             cprint(f'6. Interact  with contracts', 'yellow')
@@ -40,8 +41,6 @@ if __name__ == '__main__':
 
             cprint(f'9. Orbiter: Bridge {ETH_AMOUNT}ETH: OKX->[LINEA->RANDOM NETWORKS->LINEA]->OKX', 'yellow')
 
-            cprint(f'10. Mint origin nft', 'yellow')
-            cprint(f'11. ZkFair', 'yellow')
 
 
             # cprint(f'10. Orbiter: Bridge {USDT_AMOUNT}USDC: OKX->OP[LINEA->RANDOM NETWORKS->LINEA]->OP->OKX', 'yellow')
@@ -94,13 +93,14 @@ if __name__ == '__main__':
                 script_orbiter_eth()
                 break
 
+
+
+
+
+
+
             elif option == '10':
-                run_script(mint_origin_nft, 'scroll', 0,[])
-                break
-
-
-            elif option == '11':
-                interface_zkfair()
+                interface_others()
                 break
 
 
