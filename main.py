@@ -1,8 +1,8 @@
 from config.multiple_routes import USE_FUNCTIONS
+from config.swap_routes import ROUTES
 from helpers.cli import *
-from helpers.factory import run_multiple, run_script
+from helpers.factory import run_multiple, run_script, run_unused_fn, run_random_swap
 from modules.balance.module import interface_check_balance
-from modules.claim.module import interface_zkfair
 from modules.contracts.module import interface_contracts
 from modules.exchange_withdraw.module import interface_exchange_withdraw
 from modules.functions.module import interface_others
@@ -41,7 +41,16 @@ if __name__ == '__main__':
 
             cprint(f'9. Orbiter: Bridge {ETH_AMOUNT}ETH: OKX->[LINEA->RANDOM NETWORKS->LINEA]->OKX', 'yellow')
 
+            cprint(f'---------- Random Swaps ----------', 'blue')
+            cprint(f'11. Swap ETH <=> Random Token / Random Dex',
+                   'yellow')
+            cprint(f'---------- Multiple Functions ----------', 'blue')
+            cprint(f'12. Run multiple functions configured in config/multiple_routes.py',
+                   'yellow')
 
+            # cprint(f'---------- Unused Functions ----------', 'blue')
+            # cprint(f'13. Find and run unused contract for wallet ',
+            #        'yellow')
 
             # cprint(f'10. Orbiter: Bridge {USDT_AMOUNT}USDC: OKX->OP[LINEA->RANDOM NETWORKS->LINEA]->OP->OKX', 'yellow')
 
@@ -94,17 +103,23 @@ if __name__ == '__main__':
                 break
 
 
-
-
-
-
-
             elif option == '10':
                 interface_others()
                 break
 
 
+            elif option == '11':
+                amount_str = print_input_amounts_range('Swap amount ETH')
+                run_random_swap(ROUTES, 'scroll', amount_str)
 
+            elif option == '12':
+                run_multiple(USE_FUNCTIONS, 'scroll')
+                break
+
+
+            # elif option == '13':
+            #     run_unused_fn('scroll')
+            #     break
 
 
             else:
