@@ -28,3 +28,4 @@ pip3 install wheel
 pip3 install -r requirements.txt
 ```
 
+### 4.  TG: https://t.me/zksyncaio
