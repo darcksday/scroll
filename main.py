@@ -36,7 +36,7 @@ if __name__ == '__main__':
             cprint(f'7. Bridge USDT to USDV', 'yellow')
 
 
-            cprint(f'8. LAYER ZERO: Bridge ${LZ_SCRIPT_USDT_AMOUNT}: Arbitrum > BSC > Bitget', 'yellow')
+            cprint(f'8. LAYER ZERO: Bridge ${LZ_SCRIPT_USDT_AMOUNT}: Arbitrum > Polygon > BSC > Bitget', 'yellow')
             cprint(f'-------- Orbiter Promotion --------', 'blue')
 
             cprint(f'9. Orbiter: Bridge {ETH_AMOUNT}ETH: OKX->[LINEA->RANDOM NETWORKS->LINEA]->OKX', 'yellow')
