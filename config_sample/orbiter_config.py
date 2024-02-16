@@ -13,8 +13,14 @@ NETWORKS=[
 ]
 
 ADDITIONAL_FUNCTIONS={
-    'zksync':[
+    'zksync': [
         [supply_eth_eralend, withdraw_eth_eralend],
+    ],
+    'scroll': [
+        [supply_eth_layerbank, withdraw_eth_layerbank],
+    ],
+    'polygon_zkevm': [
+        [supply_eth_0vix, withdraw_supply_eth_0vix],
     ],
 
 
