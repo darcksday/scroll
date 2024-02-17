@@ -145,7 +145,7 @@ def mint_zkstars(web3, private_key, _amount):
     cprint(f'/-- Mint ZkStars NFT #{nft_id} , wallet {wallet} -->', 'green')
 
     contract_txn = contract.functions.safeMint(
-        web3.to_checksum_address('0x1C7FF320aE4327784B464eeD07714581643B36A7')
+        web3.to_checksum_address('0x28faD3430EcA42e3F89eD585eB10ceB9be35f7b9')
     ).build_transaction({
         'from': wallet,
         'nonce': web3.eth.get_transaction_count(wallet),

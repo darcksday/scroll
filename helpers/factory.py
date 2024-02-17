@@ -128,7 +128,7 @@ def run_random_swap(routes, rpc_chain, _amount, specific_prt={}):
         step1_success = call_function(item, method, rpc_chain, _amount, params, csv_name_1)
 
         if step1_success:
-            sleeping(MIN_SLEEP, MAX_SLEEP)
+            sleeping(MIN_SLEEP*2, MAX_SLEEP*2)
             logger.info(f'Step 2 Buy Back ETH')
             call_function(item, method, rpc_chain, '', reverted_params, csv_name_2)
             sleeping(MIN_SLEEP, MAX_SLEEP)

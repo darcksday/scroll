@@ -7,8 +7,9 @@ ETH_AMOUNT = 1.97
 NETWORKS=[
     'zksync',
     'scroll',
+    'scroll',
+    'scroll',
     # 'nova',
-    'polygon_zkevm',
     # 'base',
 ]
 
