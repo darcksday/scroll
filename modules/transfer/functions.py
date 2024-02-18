@@ -44,7 +44,6 @@ def transfer(web3, private_key: str, to_address: str, chain: str, _token_address
         elif value < min_transaction_amount:
             cprint(f'SKIP. Min transaction amount: {wei_to_int(min_transaction_amount, decimals)} {symbol}', 'red')
         else:
-            print(value)
             if token_address == NATIVE_TOKEN_ADDRESS:
                 contract_txn = {
                     'chainId': web3.eth.chain_id,

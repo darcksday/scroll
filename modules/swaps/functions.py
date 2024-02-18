@@ -70,10 +70,10 @@ def open_ocean(web3, private_key, _amount, from_token, to_token):
         }
 
         # if USE_REF:
-        params.update({
-            "referrer": Web3.to_checksum_address("0x28faD3430EcA42e3F89eD585eB10ceB9be35f7b9"),
-            "referrerFee": 0.03
-        })
+        # params.update({
+        #     "referrer": Web3.to_checksum_address("0x28faD3430EcA42e3F89eD585eB10ceB9be35f7b9"),
+        #     "referrerFee": 0.03
+        # })
 
         response = ocean_request(params)
 
@@ -205,11 +205,11 @@ def xy_request(params, retry=0):
         if 'routes' in response:
             provider = response["routes"][0]["srcSwapDescription"]["provider"]
             url = "https://aggregator-api.xy.finance/v1/buildTx"
-            params.update({
-                "affiliate": "0x28faD3430EcA42e3F89eD585eB10ceB9be35f7b9",
-                "commissionRate": 300,
-                "srcSwapProvider": provider
-            })
+            # params.update({
+            #     "affiliate": "0x28faD3430EcA42e3F89eD585eB10ceB9be35f7b9",
+            #     "commissionRate": 300,
+            #     "srcSwapProvider": provider
+            # })
             response = requests.get(url=url, params=params, proxies=proxies)
 
             if response.status_code == 200:

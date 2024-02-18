@@ -83,7 +83,7 @@ async def check_status_tx(web3, tx_hash):
                 return 1
             else:
                 cprint(f'{error} retry...', 'red')
-                time.sleep(5)
+                time.sleep(7)
 
 
 async def check_data_token(web3, token_address, abi=None):

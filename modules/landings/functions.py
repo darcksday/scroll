@@ -116,10 +116,7 @@ def supply_eth_layerbank(web3, private_key, _amount):
     contract_txn = contract.functions.supply(
         web3.to_checksum_address(LAYERBANK_WETH_CONTRACT),
         _amount
-
-
     ).build_transaction(contract_txn)
-
 
     contract_txn = add_gas_price(web3, contract_txn, chain_id)
     contract_txn = add_gas_limit(web3, contract_txn, chain_id)

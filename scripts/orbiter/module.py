@@ -10,7 +10,7 @@ from modules.orbiter_bridge.functions import orbiter_eth_bridge
 from modules.transfer.functions import map_recipients, transfer
 from web3 import Web3
 from scripts.functions import *
-from config.orbiter_config  import *
+from config.orbiter_config import *
 
 
 def script_orbiter_eth():
@@ -28,20 +28,26 @@ def script_orbiter_eth():
         cprint(f"Not enough ETH on OKX, need at least {ETH_AMOUNT} ETH", "red")
 
     recipient_map = map_recipients(recipients, private_keys)
-    web3_linea = Web3(Web3.HTTPProvider(CHAINS['linea']['rpc']))
+    web3_list = {
+        'linea': Web3(Web3.HTTPProvider(CHAINS['linea']['rpc'])),
+        'arbitrum': Web3(Web3.HTTPProvider(CHAINS['arbitrum']['rpc'])),
+        'optimism': Web3(Web3.HTTPProvider(CHAINS['optimism']['rpc'])),
+        'scroll': Web3(Web3.HTTPProvider(CHAINS['scroll']['rpc'])),
+        'base': Web3(Web3.HTTPProvider(CHAINS['base']['rpc'])),
+    }
     try:
         for item in private_keys:
             private_key = item['private_key']
 
-            run_orbiter_bridge_eth(web3_linea, item, recipient_map[private_key])
+            run_orbiter_bridge_eth(web3_list, item, recipient_map[private_key])
             sleeping(MIN_SLEEP, MAX_SLEEP)
     except KeyboardInterrupt as error:
         cprint(f' Exit, bye bye\n', 'red')
         # raise SystemExit
 
 
-def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
-    wallet_address = web3_linea.eth.account.from_key(item['private_key']).address
+def run_orbiter_bridge_eth(web3_list, item, recipient_wallet):
+    wallet_address = web3_list['linea'].eth.account.from_key(item['private_key']).address
     pct = ETH_AMOUNT * 0.02
     amount = round(ETH_AMOUNT - random.uniform(0, pct), 4)
 
@@ -52,50 +58,54 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
     sleeping(MIN_SLEEP, MAX_SLEEP)
 
     # ------------------ Start Bridge ------------------
-    random.shuffle(NETWORKS)
-    for bridge_network in NETWORKS:
-        amount = check_wait_web3_balance(web3_linea, 'linea', wallet_address, '', amount * 0.98)
-        #  balance left linea
-        amount = amount - get_min_balance('linea')
+    last_chain = 'linea'
+
+    # for based on BRIDGES_COUNT amount
+    for i in range(BRIDGES_COUNT):
+        from_chain = last_chain
+
+        all_except_from = [x for x in NETWORKS if x != from_chain]
+        to_chain = random.choice(all_except_from)
+
+        cprint(f"[{item['index']}]{wallet_address}: {last_chain} > {to_chain} | {i}/{BRIDGES_COUNT}", "blue")
+
+        amount = check_wait_web3_balance(web3_list[from_chain], from_chain, wallet_address, '', amount * 0.98)
+        #  balance left
+        amount = amount - get_min_balance(from_chain)
 
         # BRIDGE FROM LINEA TO RANDOM NETWORK
-        params = ['linea', bridge_network]
-        run_script_one(orbiter_eth_bridge, item['private_key'], 'linea', str(amount), params)
+        params = [from_chain, to_chain]
+        run_script_one(orbiter_eth_bridge, item['private_key'], from_chain, str(amount), params)
 
         # RUN ADDITIONAL FUNCTION
-        web3_random = Web3(Web3.HTTPProvider(CHAINS[bridge_network]['rpc']))
-        if bridge_network in ADDITIONAL_FUNCTIONS:
-            amount = check_wait_web3_balance(web3_random, bridge_network, wallet_address, '', amount * 0.98)
-            run_multiple(ADDITIONAL_FUNCTIONS[bridge_network], bridge_network, [item])
+        if to_chain in ADDITIONAL_FUNCTIONS:
+            amount = check_wait_web3_balance(web3_list[to_chain], to_chain, wallet_address, '', amount * 0.98)
+            run_multiple(ADDITIONAL_FUNCTIONS[to_chain], to_chain, [item])
+            sleeping(MIN_SLEEP, MAX_SLEEP)
 
         # BRIDGE FROM RANDOM NETWORK TO LINEA
-        amount = check_wait_web3_balance(web3_random, bridge_network, wallet_address, '', amount * 0.98)
-        params2 = [bridge_network, 'linea']
+        amount = check_wait_web3_balance(web3_list[to_chain], to_chain, wallet_address, '', amount * 0.98)
+
+        available_networks = NETWORKS
+        if i == BRIDGES_COUNT - 1:
+            available_networks = END_NETWORK
+        new_random_network = random.choice([x for x in available_networks if x != to_chain])
+        params2 = [to_chain, new_random_network]
+
         #  balance left on random network
-        amount = amount - get_min_balance(bridge_network)
-        run_script_one(orbiter_eth_bridge, item['private_key'], bridge_network, str(amount), params2)
+        amount = amount - get_min_balance(to_chain)
+        run_script_one(orbiter_eth_bridge, item['private_key'], to_chain, str(amount), params2)
 
-    amount = check_wait_web3_balance(web3_linea, 'linea', wallet_address, '', amount * 0.98)
-    amount = amount - get_min_balance('linea')
-
-    if END_NETWORK=='arbitrum' or END_NETWORK=='optimism':
-        web3 = Web3(Web3.HTTPProvider(CHAINS[END_NETWORK]['rpc']))
-        params3 = ['linea', END_NETWORK]
-        run_script_one(orbiter_eth_bridge, item['private_key'], 'linea', str(amount), params3)
+        last_chain = new_random_network
         sleeping(MIN_SLEEP, MAX_SLEEP)
-        amount = check_wait_web3_balance(web3, END_NETWORK, wallet_address, '', amount * 0.98)
-        amount = amount - get_min_balance(END_NETWORK)
 
+    amount = check_wait_web3_balance(web3_list[last_chain], last_chain, wallet_address, '', amount * 0.98)
+    amount = amount - get_min_balance(last_chain)
 
-        # ------------------ Withdraw to OKX ------------------
-        cprint("/-- Withdraw to OKX", "blue")
-        transfer(web3, item['private_key'], recipient_wallet, END_NETWORK, '', amount)
-
-    else:
-        # ------------------ Withdraw to OKX ------------------
-        sleeping(MIN_SLEEP, MAX_SLEEP)
-        cprint("/-- Withdraw to OKX", "blue")
-        transfer(web3_linea, item['private_key'], recipient_wallet, 'linea', '', amount)
+    # ------------------ Withdraw to OKX ------------------
+    sleeping(MIN_SLEEP, MAX_SLEEP)
+    cprint("/-- Withdraw to OKX", "blue")
+    transfer(web3_list[last_chain], item['private_key'], recipient_wallet, last_chain, '', amount)
 
     # ----------- Check OKX subAccount balances -------------
     while True:

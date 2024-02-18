@@ -44,7 +44,7 @@ def call_function(item, method, rpc_chain, _amount, params=[], csv='', retry=0):
 
         tx_hash = method(web3, item['private_key'], amount, *params)
         tx_link = f'{CHAINS[rpc_chain]["scan"]}/{tx_hash}'
-        time.sleep(2)
+        time.sleep(5)
         status = check_status_tx(web3, rpc_chain, tx_hash)
         if status == 1:
             logger.success(f'{STR_DONE} {rpc_chain} transaction: {tx_link}')
