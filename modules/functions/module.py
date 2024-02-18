@@ -36,7 +36,16 @@ def interface_others():
 
 
             elif option == '3':
-                contracts = [""]
+                contracts  = [
+                "0xeB1Afd6aF2568ccc5Bb79DF5bd0da92fa7680936",
+                "0x7Ef8F818c45f423e89d8c33C04452F5a6248Df39",
+                "0xC31BeB1355B709a73323a9f26474b17BE37Fcf4F",
+                "0x5A93E1Bfdd65328584d8246a1eE26CdE3792b2c8",
+                "0x13d89324c2a24ecb4e30835b9dbBc5A85FcD7D3F",
+                "0xdF5b374A9BDF33e0b42648f56aB44e635BEADd80",
+                "0xE097d4fc1f8365Da3A6dC7Ff783f0562C707535C",
+                "0x896Ee12B55a6A9E01991376a2199B07CbEaD6A9"
+            ]
 
                 prt_keys = get_private_keys()
                 if USE_SHUFFLE:
