@@ -1,6 +1,6 @@
 import datetime
 
-from config_sample.settings import SLIPPAGE
+from config.settings import SLIPPAGE
 from helpers.settings_helper import get_random_proxy
 from helpers.web3_helper import *
 from config.settings import *
