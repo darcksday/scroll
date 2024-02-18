@@ -18,8 +18,8 @@ def sleeping(from_sleep: object, to_sleep: object) -> object:
         time.sleep(1)
 
 
-#2023-08-15 22:36 format
-def wait_schedule(scheduled_time,interval_time=30):
+# 2023-08-15 22:36 format
+def wait_schedule(scheduled_time, interval_time=30):
     while True:
         scheduled_datetime = datetime.strptime(scheduled_time, '%Y-%m-%d %H:%M')
         current_datetime = datetime.now()
@@ -58,7 +58,6 @@ def func_chunks_generators(keys, n):
     return [keys[i:i + n] for i in range(0, len(keys), n)]
 
 
-
 def get_min_balance(network):
     return get_amount_in_range(str(MIN_BALANCE[network]))
 
@@ -66,16 +65,22 @@ def get_min_balance(network):
 def api_call(url, params=None, headers=None):
     proxies = get_random_proxy()
 
-    response = requests.get(url, params=params, headers=headers, proxies=proxies)
+    try:
+        response = requests.get(url, params=params, headers=headers, proxies=proxies)
 
-    if response.status_code == 200:
-        api_data = response.json()
-        return api_data
-    else:
-        error_text = response.json()
-        if error_text and error_text['description']:
-            cprint(error_text['description'], 'red')
+        if response.status_code == 200:
+            api_data = response.json()
+            return api_data
+        else:
+            error_text = response.json()
+            if error_text and error_text['description']:
+                cprint(error_text['description'], 'red')
 
-        cprint(f'1inch error: status code {response.status_code}, retry...', 'red')
-        time.sleep(1)
+            cprint(f'Error: status code {response.status_code}, retry...', 'red')
+            time.sleep(3)
+            return api_call(url, params, headers)
+
+    except Exception as error:
+        cprint(f'Error: {error}, retry...', 'red')
+        time.sleep(3)
         return api_call(url, params, headers)

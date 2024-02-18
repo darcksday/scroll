@@ -87,7 +87,7 @@ def mint_nfts2_me(web3, private_key, _amount, chain_id='scroll', contract_addres
     cprint(f'/-- Mint NFT, wallet {wallet} -->', 'green')
 
     if not _amount:
-        _amount = 0.00005
+        _amount = 0.0001
 
     amount = int_to_wei(_amount, 18)
     contract_txn = {
@@ -103,6 +103,7 @@ def mint_nfts2_me(web3, private_key, _amount, chain_id='scroll', contract_addres
 
     contract_txn = add_gas_price(web3, contract_txn, chain_id)
     contract_txn = add_gas_limit(web3, contract_txn, chain_id)
+
     tx_hash = sign_tx(web3, contract_txn, private_key)
     return tx_hash
 
@@ -236,8 +237,6 @@ def create_omnisea_collection(web3, private_key, _amount=0):
     cprint(f'/-- Wallet {wallet} --> Create NFT collection on Omnisea', 'green')
 
     title, symbol = generate_collection_name()
-
-
 
     contract = web3.eth.contract(address=address_contract, abi=OMNISEA_ABI)
     contract_txn = contract.functions.create([

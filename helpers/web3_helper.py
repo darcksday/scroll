@@ -70,11 +70,14 @@ def add_gas_limit(web3, contract_txn, chain, approve=0):
     gas_limit = web3.eth.estimate_gas(contract_txn)
 
     if chain == 'zksync' and approve == 0 and 'GAS_LIMIT_COF' in globals():
-        contract_txn['gas'] = int(gas_limit*GAS_LIMIT_COF)
+        contract_txn['gas'] = int(gas_limit * GAS_LIMIT_COF)
     elif chain == 'dfk':
         contract_txn['gas'] = int(gas_limit * 2)
-    elif chain == 'goerly':
-        contract_txn['gas'] = int(gas_limit * 2)
+    elif chain == 'scroll':
+        if int(gas_limit) < 200000:
+            contract_txn['gas'] = int(gas_limit * 1.5)
+        else:
+            contract_txn['gas'] = int(gas_limit)
     else:
         multiplier = [1.1, 1.2]
         contract_txn['gas'] = int(gas_limit * random.uniform(multiplier[0], multiplier[1]))
@@ -193,10 +196,6 @@ def get_token_symbol(web3, chain, contract_address=''):
         return symbol
 
 
-
-
-
-
 def check_wait_web3_balance(web3_provider, chain, wallet_address, token, amount):
     if CHECK_GWEI:
         wait_gas()
@@ -213,9 +212,7 @@ def check_wait_web3_balance(web3_provider, chain, wallet_address, token, amount)
         continue
 
 
-
-
-def get_web3(url,proxy=None):
+def get_web3(url, proxy=None):
     if proxy:
         logger.info(f"Use proxy {proxy['http']}")
 
@@ -257,8 +254,8 @@ def get_gas():
 
     return gwei_gas_price
 
-def wait_gas():
 
+def wait_gas():
     while True:
 
         current_gas = get_gas()
@@ -266,7 +263,8 @@ def wait_gas():
         if current_gas > MAX_GWEI:
             logger.info(f'Сurrent_gas : {current_gas} > {MAX_GWEI}')
             time.sleep(100)
-        else: break
+        else:
+            break
 
 
 def stargate_lz_fee(wallet, from_chain, to_chain, bridge_contract, extra_gas=0):

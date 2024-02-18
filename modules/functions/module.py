@@ -1,4 +1,5 @@
 from helpers.cli import print_input_amounts_range
+from helpers.csv_helper import start_csv
 from helpers.factory import run_script, run_random_swap, run_multiple, call_function
 from helpers.settings_helper import get_private_keys
 from modules.functions.functions import *
@@ -12,13 +13,12 @@ def interface_others():
             cprint(f'Select an action:', 'yellow')
             cprint(f'1. Send email (cheap transaction) / dMail', 'yellow')
             cprint(f'2. Safe create wallet', 'yellow')
-            cprint(f'3. RANDOM Mint nfts2me (need add contracts)', 'yellow')
+            cprint(f'3. RANDOM Mint nfts2me', 'yellow')
             cprint(f'4. RANDOM Mint ZkStars NFT', 'yellow')
             cprint(f'5. Mint origin nft', 'yellow')
             cprint(f'7. Deposit LayerBank', 'yellow')
             cprint(f'8. Withdraw LayerBank', 'yellow')
             cprint(f'9. Create Nft Collection Omnisea', 'yellow')
-
 
             cprint(f'0. Exit', 'yellow')
             option = input("> ")
@@ -36,24 +36,25 @@ def interface_others():
 
 
             elif option == '3':
-                contracts  = [
-                "0xeB1Afd6aF2568ccc5Bb79DF5bd0da92fa7680936",
-                "0x7Ef8F818c45f423e89d8c33C04452F5a6248Df39",
-                "0xC31BeB1355B709a73323a9f26474b17BE37Fcf4F",
-                "0x5A93E1Bfdd65328584d8246a1eE26CdE3792b2c8",
-                "0x13d89324c2a24ecb4e30835b9dbBc5A85FcD7D3F",
-                "0xdF5b374A9BDF33e0b42648f56aB44e635BEADd80",
-                "0xE097d4fc1f8365Da3A6dC7Ff783f0562C707535C",
-                "0x896Ee12B55a6A9E01991376a2199B07CbEaD6A9"
-            ]
+                contracts = [
+                    "0x0B0EBDafA49e676A60445EcBdD4DdF5ABc83a54A",
+                    "0x267412c94F78941F93a33E292fa7Bbf849751844",
+                    "0x805AD7aE07c3eE6792e6CE105E2cc91F015294D7",
+                    "0xAe7B1F56A251B1c608a5Ec536791955D2844C7c3",
+                    "0xD20388fFEB7A761E775ECEbF05197323ab3aB7F8",
+                    "0xBA396fF993947b06945CB5Ed9dEc31a8fc981F5A",
+                    "0x874ADe3582354D3A30Bb484607717e6e61b8619B",
+                ]
 
+                csv_name = 'nfts2me'
+                start_csv(csv_name)
                 prt_keys = get_private_keys()
                 if USE_SHUFFLE:
                     random.shuffle(prt_keys)
 
                 for item in prt_keys:
                     params = ["scroll", random.choice(contracts)]
-                    call_function(item, mint_nfts2_me, 'scroll', "0.00005", params)
+                    call_function(item, mint_nfts2_me, 'scroll', "0.0001", params, csv_name)
                     sleeping(MIN_SLEEP, MAX_SLEEP)
 
 
@@ -62,7 +63,7 @@ def interface_others():
 
 
             elif option == '5':
-                run_script(mint_origin_nft, 'scroll', 0,[])
+                run_script(mint_origin_nft, 'scroll', 0, [])
                 break
 
 

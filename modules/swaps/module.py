@@ -1,9 +1,7 @@
 from termcolor import cprint
 
-from config.multiple_routes import USE_FUNCTIONS
-from config.swap_routes import ROUTES
-from helpers.cli import print_input_amounts_range, print_input_contract_address, print_input_value
-from helpers.factory import run_script, run_random_swap, run_multiple
+from helpers.cli import print_input_amounts_range, print_input_contract_address
+from helpers.factory import run_script
 from modules.swaps.functions import *
 
 
