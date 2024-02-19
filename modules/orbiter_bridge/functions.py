@@ -1,4 +1,5 @@
 import decimal
+import time
 
 from helpers.settings_helper import get_random_proxy
 from helpers.web3_helper import *
@@ -135,22 +136,21 @@ def __get_orbiter_token_value(base_num, chain):
 
 
 def claim_points(address):
-
-
-
-    url='https://api.orbiter.finance/points_system/user/card/draw'
-    params={'address': address}
+    url = 'https://api.orbiter.finance/points_system/user/card/draw'
+    params = {'address': address}
     proxies = get_random_proxy()
 
+    try:
+        requests.get('https://api.orbiter.finance/points_system/v2/user/points', params=params, headers=None, proxies=proxies)
+        requests.get('https://api.orbiter.finance/points_system/user/nfts', params=params, headers=None, proxies=proxies)
+        time.sleep(1)
+        requests.get('https://api.orbiter.finance/points_system/user/cards', params=params, headers=None, proxies=proxies)
 
+        response = requests.post(url, json=params, headers=None, proxies=proxies)
 
-    requests.get('https://api.orbiter.finance/points_system/v2/user/points',params=params,headers=None, proxies=proxies)
-    requests.get('https://api.orbiter.finance/points_system/user/nfts',params=params,headers=None, proxies=proxies)
-    requests.get('https://api.orbiter.finance/points_system/user/cards',params=params,headers=None, proxies=proxies)
-
-
-
-    response = requests.post(url, json=params, headers=None, proxies=proxies)
-
-    print(response.json())
-    return response
+        print(response.json())
+        return response
+    except Exception as e:
+        cprint(f"Error {e}, retry...", 'red')
+        time.sleep(3)
+        return claim_points(address)
