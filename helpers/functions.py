@@ -7,7 +7,7 @@ from tqdm import tqdm
 from datetime import datetime
 from loguru import logger
 
-from config.settings import MAX_GWEI, MIN_BALANCE
+from config.settings import MAX_GWEI, MIN_BALANCE, USE_PROXY
 from helpers.cli import get_amount_in_range
 from helpers.settings_helper import get_random_proxy
 
@@ -63,7 +63,10 @@ def get_min_balance(network):
 
 
 def api_call(url, params=None, headers=None):
-    proxies = get_random_proxy()
+    proxies=[]
+
+    if USE_PROXY:
+        proxies = get_random_proxy()
 
     try:
         response = requests.get(url, params=params, headers=headers, proxies=proxies)

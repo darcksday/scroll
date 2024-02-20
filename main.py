@@ -1,12 +1,13 @@
 from config.multiple_routes import USE_FUNCTIONS
 from config.swap_routes import ROUTES
 from helpers.cli import *
-from helpers.factory import run_multiple, run_random_swap
+from helpers.factory import run_multiple, run_random_swap, run_script
 from modules.balance.module import interface_check_balance
 from modules.contracts.module import interface_contracts
 from modules.exchange_withdraw.module import interface_exchange_withdraw
 from modules.functions.module import interface_others
 from modules.orbiter_bridge.module import interface_orbiter_bridge
+from modules.run_layer_zero.functions import merkly_v2
 from modules.run_layer_zero.module import interface_usdv
 from modules.swaps.module import interface_swaps
 from modules.transfer.module import interface_transfer
@@ -33,11 +34,11 @@ if __name__ == '__main__':
             cprint(f'-------- Own Contracts --------', 'blue')
             cprint(f'6. Interact  with contracts', 'yellow')
 
-            cprint(f'-------- USDV Stargate --------', 'blue')
+            cprint(f'-------- LAYER ZERO --------', 'blue')
             cprint(f'7. Bridge USDT to USDV', 'yellow')
-
-
             cprint(f'8. LAYER ZERO: Bridge ${LZ_SCRIPT_USDT_AMOUNT}: Arbitrum > Polygon > BSC > Bitget', 'yellow')
+            cprint(f'14. Bridge/L0-v2 merkly.com from Scroll to Random', 'yellow')
+
             cprint(f'-------- Orbiter Promotion --------', 'blue')
 
             cprint(f'9. Orbiter: Bridge {ETH_AMOUNT}ETH: OKX->[LINEA->RANDOM NETWORKS->LINEA]->OKX', 'yellow')
@@ -111,6 +112,15 @@ if __name__ == '__main__':
             elif option == '13':
                 run_unused_fn('scroll')
                 break
+
+
+            elif option == '14':
+
+                from_network = 'scroll'
+                to_network = ''
+                params = [from_network, to_network]
+
+                run_script(merkly_v2, 'scroll', '', params)
 
             else:
                 cprint(f'Wrong action. Please try again.\n', 'red')
