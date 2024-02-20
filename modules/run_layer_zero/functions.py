@@ -166,10 +166,9 @@ def __get_stargate_bridge_contract(web3, chain):
     contract = web3.eth.contract(address=address_contract, abi=ABI_STARGATE_BRIDGE_V1)
     return address_contract, contract
 
-def merkly_v2(web3, private_key, amount, from_chain, to_chain=''):
+def merkly_v2(web3, private_key, amount, from_chain='scroll', to_chain=''):
     account = web3.eth.account.from_key(private_key)
     wallet = account.address
-    chain_id='scroll'
 
     if not amount:
         amount = 200000
@@ -216,8 +215,8 @@ def merkly_v2(web3, private_key, amount, from_chain, to_chain=''):
                 'gas': 0,
             }
         )
-        contract_txn = add_gas_price(web3, contract_txn, chain_id)
-        contract_txn = add_gas_limit(web3, contract_txn, chain_id)
+        contract_txn = add_gas_price(web3, contract_txn, from_chain)
+        contract_txn = add_gas_limit(web3, contract_txn, from_chain)
         tx_hash = sign_tx(web3, contract_txn, private_key)
         return tx_hash
     else:

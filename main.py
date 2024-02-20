@@ -117,10 +117,8 @@ if __name__ == '__main__':
             elif option == '14':
 
                 from_network = 'scroll'
-                to_network = ''
-                params = [from_network, to_network]
 
-                run_script(merkly_v2, 'scroll', '', params)
+                run_script(merkly_v2, 'scroll', '')
 
             else:
                 cprint(f'Wrong action. Please try again.\n', 'red')
