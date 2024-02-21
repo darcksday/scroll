@@ -33,7 +33,7 @@ USDT уже должно быть на балансе выбраной сети.
 
 
 
-### 8. пункт - цепочный бридж Bridge : Bitget->Arbitrum USDT -> BSC USDV-> Bitget
+### 8. пункт - цепочный бридж Bridge : Bitget->Arbitrum USDT-> Polygon USDV -> BSC USDV-> Bitget
 
 Скрипт пробегаеться кошель за кошелем - актуально для прогона больших сум &#x20;
 
