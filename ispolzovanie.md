@@ -11,7 +11,7 @@ python3 main.py
 
 <figure><img src=".gitbook/assets/Screenshot 2023-12-14 194423.png" alt=""><figcaption></figcaption></figure>
 
-### 5.Swaps on Dex
+### 5. Swaps on Dex
 
 Выбрать свап в конкретном дексе
 
