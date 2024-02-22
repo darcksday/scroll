@@ -57,18 +57,18 @@ def run_usdv_one_wallet(web3_bsc, web3_arbitrum, private_key, recipient_wallet, 
 
     sleeping(2, 3)
 
-    params = ['arbitrum', 'polygon', ARB_USDT_ADDRESS]
+    params = ['arbitrum', 'avalanche', ARB_USDT_ADDRESS]
 
     run_script_one(stargate_bridge_usdv, private_key, 'arbitrum', 0, params)
 
 
-    # ------------------ Check Polygon balance ------------------
-    amount = check_wait_web3_balance(web3_polygon, 'polygon', wallet_address, USDV_TOKEN_ADDRESS['polygon'], amount)
+    # ------------------ Check Avalanche balance ------------------
+    amount = check_wait_web3_balance(web3_polygon, 'avalanche', wallet_address, USDV_TOKEN_ADDRESS['avalanche'], amount)
     sleeping(2, 3)
 
-    params = ['polygon', 'bsc', USDV_TOKEN_ADDRESS['polygon']]
+    params = ['avalanche', 'bsc', USDV_TOKEN_ADDRESS['avalanche']]
 
-    run_script_one(stargate_send_usdv, private_key, 'polygon', 0, params)
+    run_script_one(stargate_send_usdv, private_key, 'avalanche', 0, params)
 
     amount = check_wait_web3_balance(web3_bsc, 'BSC', wallet_address, USDV_TOKEN_ADDRESS['bsc'], amount)
     sleeping(2, 3)
