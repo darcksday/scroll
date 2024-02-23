@@ -1,3 +1,8 @@
+#Get Started 
+https://darcksdays-organization.gitbook.io/for-sqad/
+
+
+
 # Установка
 
 ### У вас должно быть установлено:
