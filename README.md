@@ -1,7 +1,4 @@
 # Get Started 
-https://darcksdays-organization.gitbook.io/for-sqad/
+DOCS: https://darcksdays-organization.gitbook.io/for-sqad/
 
-
-
-
-### 4.  TG: https://t.me/zksyncaio
+TG: https://t.me/zksyncaio
