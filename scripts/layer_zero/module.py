@@ -42,7 +42,7 @@ def script_usdv_layer_zero():
 
 
 def run_usdv_one_wallet(web3_bsc, web3_arbitrum, private_key, recipient_wallet, wallet_num):
-    web3_polygon = Web3(Web3.HTTPProvider(CHAINS['polygon']['rpc']))
+    web3_polygon = Web3(Web3.HTTPProvider(CHAINS['avalanche']['rpc']))
 
     amount = round(LZ_SCRIPT_USDT_AMOUNT - random.uniform(0, 10), 2)
     # ------------------ Withdraw ------------------
