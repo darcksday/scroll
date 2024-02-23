@@ -38,7 +38,7 @@ def script_usdv_layer_zero():
             sleeping(MIN_SLEEP, MAX_SLEEP)
     except KeyboardInterrupt:
         cprint(f' Exit, bye bye\n', 'red')
-        # raise SystemExit
+        raise SystemExit
 
 
 def run_usdv_one_wallet(web3_bsc, web3_arbitrum, private_key, recipient_wallet, wallet_num):
@@ -62,7 +62,7 @@ def run_usdv_one_wallet(web3_bsc, web3_arbitrum, private_key, recipient_wallet, 
     run_script_one(stargate_bridge_usdv, private_key, 'arbitrum', 0, params)
 
 
-    # ------------------ Check Avalanche balance ------------------
+    # ------------------ Check avalanche balance ------------------
     amount = check_wait_web3_balance(web3_polygon, 'avalanche', wallet_address, USDV_TOKEN_ADDRESS['avalanche'], amount)
     sleeping(2, 3)
 

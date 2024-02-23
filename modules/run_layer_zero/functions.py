@@ -22,7 +22,6 @@ def stargate_bridge_usdv(web3, private_key, amount,from_chain, to_chain,from_tok
 
 
 
-
         if not  amount:
             amount = get_token_balance(web3, wallet, from_token)
         else:
@@ -88,7 +87,10 @@ def stargate_send_usdv(web3, private_key, amount, from_chain, to_chain, from_tok
 
     address_contract = web3.to_checksum_address(SWAP_RECOLOR_CONTRACTS[from_chain])
 
-    bridge_contract = web3.eth.contract(address=address_contract, abi=SEND_USDV_ABI)
+
+
+    bridge_contract = web3.eth.contract(address=address_contract, abi=SEND_USDV_ABI[from_chain])
+
 
     token_contract, token_decimal, symbol = check_data_token(web3, from_token)
 
@@ -108,13 +110,23 @@ def stargate_send_usdv(web3, private_key, amount, from_chain, to_chain, from_tok
         min_amount = amount - 50
         wallet_bytes = wallet.replace('0x', '0x000000000000000000000000')
 
-        param = [wallet_bytes, amount, min_amount, LZ_CHAIN_IDS[to_chain]]
-        extra_options = '0x00020000000000000000000000000000000000000000000000000000000000029810'
+        if from_chain=='avalanche':
+            param = [wallet_bytes, amount, min_amount, LZ_CHAIN_IDS[to_chain]]
+            extra_options = '0x00010000000000000000000000000000000000000000000000000000000000029810'
+
+        else:
+            param = [wallet_bytes, amount, min_amount, LZ_CHAIN_IDS[to_chain]]
+            extra_options = '0x00020000000000000000000000000000000000000000000000000000000000029810'
         msg_fee = [lz_fee, 0]
         compose_msg = b''
 
         chain_id = web3.eth.chain_id
 
+        print(param,
+            extra_options,
+            msg_fee,
+            wallet,
+            compose_msg)
         contract_txn = bridge_contract.functions.send(
             param,
             extra_options,
@@ -203,7 +215,7 @@ def merkly_v2(web3, private_key, amount, from_chain='scroll', to_chain=''):
     if amount:
 
         contract_txn = bridge_contract.functions.bridgeGas(
-            LZ_CHAIN_IDS[to_chain],
+            LZ_CHAIN_IDS_V2[to_chain],
             '',
             options
         ).build_transaction(
@@ -240,7 +252,7 @@ def merkly_lz_fee(contract,to_chain):
 
 
     return contract.functions.quote(
-        LZ_CHAIN_IDS[to_chain],
+        LZ_CHAIN_IDS_V2[to_chain],
         '',
         '0x00030100110100000000000000000000000000030d40',
         False
