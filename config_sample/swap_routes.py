@@ -47,5 +47,14 @@ ROUTES = {
         'function': swap_token_skydrome
 
     },
+    'swap_ambient': {
+        'tokens': {
+            TOKENS['USDC'],
+            TOKENS['USDT'],
+            TOKENS['DAI'],
+        },
+        'function': swap_ambient
+
+    },
 
 }

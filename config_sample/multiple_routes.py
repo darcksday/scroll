@@ -1,7 +1,7 @@
 from helpers.factory import run_random_swap
 from modules.functions.functions import safe_create, send_email, mint_zkstars, mint_origin_nft, create_omnisea_collection
 from modules.landings.functions import supply_eth_layerbank, withdraw_eth_layerbank
-from modules.swaps.functions import  open_ocean, xy_swap, swap_token_syncswap, swap_token_zebra, swap_token_skydrome
+from modules.swaps.functions import open_ocean, xy_swap, swap_token_syncswap, swap_token_zebra, swap_token_skydrome, swap_ambient
 
 """
 You can use:
@@ -18,6 +18,7 @@ xy_swap
 swap_token_syncswap
 swap_token_zebra
 swap_token_skydrome
+swap_ambient
 
 
 ______________________________________________________
@@ -40,6 +41,7 @@ USE_FUNCTIONS = [
         swap_token_skydrome,
 
         run_random_swap,
+        swap_ambient,
 
         send_email,
         safe_create,

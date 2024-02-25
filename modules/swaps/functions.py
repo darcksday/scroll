@@ -581,9 +581,9 @@ def swap_ambient(web3, private_key, _amount, _from_token, _to_token):
     address_contract = web3.to_checksum_address(AMBIENT_CONTRACT['router'])
     wallet = web3.eth.account.from_key(private_key).address
     contract = web3.eth.contract(address=address_contract, abi=AMBIENT_ABI)
-
     balance = get_token_balance(web3, wallet, from_token)
     min_balance = get_min_balance(chain)
+
 
     # Token
     if from_token != '':
@@ -595,7 +595,6 @@ def swap_ambient(web3, private_key, _amount, _from_token, _to_token):
     min_transaction_amount = int_to_wei(MIN_TRANSACTION_AMOUNT, decimals)
 
     cprint(f'/-- Start Ambient swap for wallet {wallet} {symbol} -->', 'green')
-
 
     if to_token == '':
         to_token = WETH_ADDRESS
@@ -632,39 +631,49 @@ def swap_ambient(web3, private_key, _amount, _from_token, _to_token):
 
     from_token = web3.to_checksum_address(from_token)
     to_token = web3.to_checksum_address(to_token)
-    min_amount_out,swap_type = get_min_amount_out_sd(contract, from_token, to_token, amount)
-    ct = datetime.datetime.now()
-    deadline = int(ct.timestamp()) + 60 * 60 * 2
 
+
+    min_amount_out=get_min_amount_out_amb(web3,from_token,to_token,amount)
+    pool_idx = 420
+    reserve_flags = 0
+    tip = 0
+    is_buy=True
+    limit_price = 21267430153580247136652501917186561137
+
+    #from ETH
     if from_token == WETH_ADDRESS:
-        contract_txn = contract.functions.swapExactETHForTokens(
-            min_amount_out,
-            [[
-                from_token,
-                to_token,
-                swap_type
-            ]],
-            wallet,
-            deadline
-        )
+        base=NULL_TOKEN_ADDRESS
+        quote=to_token
+    #TO ETH
+    elif to_token==WETH_ADDRESS:
+        base =NULL_TOKEN_ADDRESS
+        quote=from_token
+        is_buy=False
+        limit_price=65537
+    #Stable
     else:
-        contract_txn = contract.functions.swapExactTokensForETH(
-            amount,
-            min_amount_out,
-            [[
-                from_token,
-                to_token,
-                swap_type
-            ]],
-            wallet,
-            deadline
-        )
+        base=from_token
+        quote=to_token
+
+    contract_txn = contract.functions.swap(
+        base,
+        quote,
+        pool_idx,
+        is_buy,
+        is_buy,
+        amount,
+        tip,
+        limit_price,
+        min_amount_out,
+        reserve_flags
+
+    )
 
     contract_txn = contract_txn.build_transaction(
         {
             'from': wallet,
             'nonce': web3.eth.get_transaction_count(wallet),
-            'value': amount if from_token == WETH_ADDRESS else 0,
+            'value': amount if from_token==WETH_ADDRESS else 0,
             'gasPrice': 0,
             'gas': 0,
         }
@@ -676,17 +685,18 @@ def swap_ambient(web3, private_key, _amount, _from_token, _to_token):
     tx_hash = sign_tx(web3, contract_txn, private_key)
     return tx_hash
 
-# def get_min_amount_out_amb(from_token_name, to_token_name, from_token_amount):
-#     eth_price = price_token(all_prices(), "ETH")
-#     return_max = float(eth_price) * amount
-#     return_min = round(return_max - return_max * 0.01, 6)
-#     return int(return_min)
-#
-#     amount_in_usd = (await self.client.get_token_price(api_names[from_token_name])) * from_token_amount
-#     min_amount_out = (amount_in_usd / await self.client.get_token_price(api_names[to_token_name]))
-#
-#     decimals = 18 if to_token_name == 'ETH' else await self.client.get_decimals(to_token_name)
-#
-#     min_amount_out_in_wei = self.client.to_wei(min_amount_out, decimals)
-#
-#     return int(min_amount_out_in_wei - (min_amount_out_in_wei / 100 * SLIPPAGE))
+def get_min_amount_out_amb(web3,from_token, to_token, from_token_amount):
+    token_contract1, decimals1, symbol1 = check_data_token(web3, from_token)
+    token_contract2, decimals2, symbol2 = check_data_token(web3, to_token)
+    prices=all_prices()
+
+    from_price = float(price_token(prices, symbol1))
+    to_price = float(price_token(prices, symbol2))
+
+    amount_in_usd=from_price*wei_to_int(from_token_amount,decimals1)
+
+    min_amount_out = (amount_in_usd / to_price)
+
+    min_amount_out_in_wei =int_to_wei(min_amount_out,decimals2)
+
+    return int(min_amount_out_in_wei - (min_amount_out_in_wei / 100 * SLIPPAGE))
