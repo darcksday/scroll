@@ -46,10 +46,10 @@ USE_FUNCTIONS = [
         mint_zkstars,
         create_omnisea_collection,
         # mint_origin_nft,
-        [
-            supply_eth_layerbank,
-            withdraw_eth_layerbank,
-        ],
+        # [
+        #     supply_eth_layerbank,
+        #     withdraw_eth_layerbank,
+        # ],
 
 
 

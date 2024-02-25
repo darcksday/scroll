@@ -676,17 +676,17 @@ def swap_ambient(web3, private_key, _amount, _from_token, _to_token):
     tx_hash = sign_tx(web3, contract_txn, private_key)
     return tx_hash
 
-# def get_min_amount_out_amb(from_token_name, to_token_name, from_token_amount):
-#     eth_price = price_token(all_prices(), "ETH")
-#     return_max = float(eth_price) * amount
-#     return_min = round(return_max - return_max * 0.01, 6)
-#     return int(return_min)
-#
-#     amount_in_usd = (await self.client.get_token_price(api_names[from_token_name])) * from_token_amount
-#     min_amount_out = (amount_in_usd / await self.client.get_token_price(api_names[to_token_name]))
-#
-#     decimals = 18 if to_token_name == 'ETH' else await self.client.get_decimals(to_token_name)
-#
-#     min_amount_out_in_wei = self.client.to_wei(min_amount_out, decimals)
-#
-#     return int(min_amount_out_in_wei - (min_amount_out_in_wei / 100 * SLIPPAGE))
+def get_min_amount_out_amb(from_token_name, to_token_name, from_token_amount):
+    eth_price = price_token(all_prices(), "ETH")
+    return_max = float(eth_price) * amount
+    return_min = round(return_max - return_max * 0.01, 6)
+    return int(return_min)
+
+    amount_in_usd = (await self.client.get_token_price(api_names[from_token_name])) * from_token_amount
+    min_amount_out = (amount_in_usd / await self.client.get_token_price(api_names[to_token_name]))
+
+    decimals = 18 if to_token_name == 'ETH' else await self.client.get_decimals(to_token_name)
+
+    min_amount_out_in_wei = self.client.to_wei(min_amount_out, decimals)
+
+    return int(min_amount_out_in_wei - (min_amount_out_in_wei / 100 * SLIPPAGE))
