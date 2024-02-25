@@ -118,7 +118,7 @@ def check_status_tx(web3, chain, tx_hash):
     while True:
         try:
 
-            web3.eth.wait_for_transaction_receipt(tx_hash)
+            # web3.eth.wait_for_transaction_receipt(tx_hash)
             status_ = web3.eth.get_transaction_receipt(tx_hash)
             status = status_["status"]
             if status in [0, 1]:
