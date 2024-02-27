@@ -5,11 +5,12 @@ from modules.landings.functions import withdraw_eth_layerbank, supply_eth_layerb
 from modules.run_layer_zero.config import MERKLEY_BRIDGE_CONTRACTS_V2
 from modules.run_layer_zero.functions import merkly_v2
 from modules.swaps.config import OPENOCEAN_CONTRACT, XYSWAP_CONTRACT, SYNCSWAP_CONTRACTS, ZEBRA_CONTRACTS, SKYDROME_CONTRACTS, \
-    AMBIENT_CONTRACT
-from modules.swaps.functions import open_ocean, xy_swap, swap_token_syncswap, swap_token_zebra, swap_token_skydrome, swap_ambient
+    AMBIENT_CONTRACT, IZUMI_CONTRACTS
+from modules.swaps.functions import open_ocean, xy_swap, swap_token_syncswap, swap_token_zebra, swap_token_skydrome, swap_ambient, \
+    swap_izumi
 
 ALL_FUNCTIONS = {
-    # OPENOCEAN_CONTRACT["router"]: open_ocean,
+    OPENOCEAN_CONTRACT["router"]: open_ocean,
     # XYSWAP_CONTRACT: xy_swap,
     # LAYERBANK_CONTRACT: [supply_eth_layerbank, withdraw_eth_layerbank],
 
@@ -17,6 +18,7 @@ ALL_FUNCTIONS = {
     ZEBRA_CONTRACTS['router']: swap_token_zebra,
     SKYDROME_CONTRACTS['router']: swap_token_skydrome,
     AMBIENT_CONTRACT['router']:swap_ambient,
+    IZUMI_CONTRACTS['router']:swap_izumi,
     DMAIL_CONTRACT: send_email,
     SAFE_CONTRACT: safe_create,
     "0x609c2f307940b8f52190b6d3d3a41c762136884e": mint_zkstars,
@@ -30,6 +32,7 @@ ALL_FUNCTIONS = {
     "0xBA396fF993947b06945CB5Ed9dEc31a8fc981F5A": mint_nfts2_me,
     "0x874ADe3582354D3A30Bb484607717e6e61b8619B": mint_nfts2_me,
     MERKLEY_BRIDGE_CONTRACTS_V2['scroll']: merkly_v2,
+
 
 
 
