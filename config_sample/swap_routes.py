@@ -27,6 +27,7 @@ ROUTES = {
     'swap_token_syncswap': {
         'tokens': {
             TOKENS['USDC'],
+            TOKENS['USDT'],
         },
         'function': swap_token_syncswap
 
@@ -35,6 +36,7 @@ ROUTES = {
     'swap_token_zebra': {
         'tokens': {
             TOKENS['USDC'],
+            TOKENS['USDT'],
         },
         'function': swap_token_zebra
 
@@ -47,6 +49,7 @@ ROUTES = {
         'function': swap_token_skydrome
 
     },
+
     'swap_ambient': {
         'tokens': {
             TOKENS['USDC'],
@@ -56,7 +59,6 @@ ROUTES = {
         'function': swap_ambient
 
     },
-
     'swap_izumi': {
         'tokens': {
             TOKENS['USDC'],

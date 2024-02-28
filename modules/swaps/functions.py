@@ -1,5 +1,6 @@
 import datetime
 
+from eth_account.messages import encode_structured_data
 from hexbytes import HexBytes
 
 from config.settings import SLIPPAGE
@@ -10,6 +11,7 @@ from helpers.functions import int_to_wei, sleeping, wei_to_int, get_min_balance
 
 from modules.swaps.config import *
 from eth_abi import encode
+from time import time
 
 
 
@@ -306,14 +308,27 @@ def swap_token_syncswap(web3, private_key, _amount, _from_token, _to_token):
             'amountIn': amount
         }]
 
-        ct = datetime.datetime.now()
-        deadline = int(ct.timestamp()) + 60 * 60 * 2
+        deadline = int(time() + 60 * 60 * 2)
+        if from_token == WETH_ADDRESS or to_token == WETH_ADDRESS:
+            contract_txn = contract.functions.swap(
+                path,
+                min_amount_out,
+                deadline
+            )
 
-        contract_txn = contract.functions.swap(
-            path,
-            min_amount_out,
-            deadline
-        ).build_transaction(
+        else:
+            contract_txn = contract.functions.swapWithPermit(
+                path,
+                min_amount_out,
+                deadline,
+                [
+                    from_token,
+                    2 ** 256 - 1,
+                    *(sign_permission(web3, private_key,from_token))
+                ]
+            )
+
+        contract_txn = contract_txn.build_transaction(
             {
                 'from': wallet,
                 'nonce': web3.eth.get_transaction_count(wallet),
@@ -331,12 +346,94 @@ def swap_token_syncswap(web3, private_key, _amount, _from_token, _to_token):
 
 
 def get_syncswap_pool(web3, from_token, to_token):
-    pool_contract = web3.eth.contract(address=SYNCSWAP_CONTRACTS["classic_pool"], abi=SYNCSWAP_CLASSIC_POOL_ABI)
+    if from_token==WETH_ADDRESS or to_token==WETH_ADDRESS:
+        contract_address=SYNCSWAP_CONTRACTS["classic_pool"]
+    else:
+        contract_address=SYNCSWAP_CONTRACTS["stable_pool"]
 
+    pool_contract = web3.eth.contract(address=contract_address, abi=SYNCSWAP_CLASSIC_POOL_ABI)
     return pool_contract.functions.getPool(
         from_token,
         to_token
     ).call()
+
+def sign_permission(web3, private_key, from_token):
+    address = web3.eth.account.from_key(private_key).address
+
+    token_contract, decimals, token_name = check_data_token(web3, from_token)
+    token_data= {
+        'USDT': ("Tether USD", 1),
+        'USDC': ("USD Coin", 2)
+    }
+    domain, version=token_data[token_name]
+
+    deadline = int(time() + 60 * 60 * 2)
+
+
+    sign_data = {
+        "types": {
+            "Permit": [
+                {
+                    "name": "owner",
+                    "type": "address"
+                },
+                {
+                    "name": "spender",
+                    "type": "address"
+                },
+                {
+                    "name": "value",
+                    "type": "uint256"
+                },
+                {
+                    "name": "nonce",
+                    "type": "uint256"
+                },
+                {
+                    "name": "deadline",
+                    "type": "uint256"
+                }
+            ],
+            "EIP712Domain": [
+                {
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "name": "version",
+                    "type": "string"
+                },
+                {
+                    "name": "chainId",
+                    "type": "uint256"
+                },
+                {
+                    "name": "verifyingContract",
+                    "type": "address"
+                }
+            ]
+        },
+        "domain": {
+            "name": domain,
+            "version": f"{version}",
+            "chainId": web3.eth.chain_id,
+            "verifyingContract": from_token
+        },
+        "primaryType": "Permit",
+        "message": {
+            "owner": address,
+            "spender": SYNCSWAP_CONTRACTS['router'],
+            "value": 2 ** 256 - 1,
+            "nonce": 0,
+            "deadline": deadline
+        }
+    }
+    data_encoded = encode_structured_data(sign_data)
+    sing_data = web3.eth.account.sign_message(data_encoded,private_key=private_key)
+
+    return deadline, sing_data.v, hex(sing_data.r), hex(sing_data.s)
+
+
 
 
 def get_min_amount_out(web3, pool_address, token_address, amount, wallet):
@@ -420,29 +517,33 @@ def swap_token_zebra(web3, private_key, _amount, _from_token, _to_token):
     from_token = web3.to_checksum_address(from_token)
     to_token = web3.to_checksum_address(to_token)
     min_amount_out = get_min_amount_out_zb(contract, from_token, to_token, amount)
-    ct = datetime.datetime.now()
-    deadline = int(ct.timestamp()) + 60 * 60 * 2
+    deadline = int(time()+ 60 * 60 * 2)
+
+    params=(
+        min_amount_out,
+        [
+            from_token,
+            to_token,
+        ],
+        wallet,
+        deadline
+    )
+
+
 
     if from_token == WETH_ADDRESS:
         contract_txn = contract.functions.swapExactETHForTokens(
-            min_amount_out,
-            [
-                from_token,
-                to_token,
-            ],
-            wallet,
-            deadline
+            *params
         )
-    else:
+    elif to_token==WETH_ADDRESS:
         contract_txn = contract.functions.swapExactTokensForETH(
             amount,
-            min_amount_out,
-            [
-                from_token,
-                to_token,
-            ],
-            wallet,
-            deadline
+            *params
+        )
+    else:
+        contract_txn = contract.functions.swapExactTokensForTokens(
+            amount,
+            *params
         )
 
     contract_txn = contract_txn.build_transaction(
