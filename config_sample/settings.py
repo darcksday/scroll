@@ -229,6 +229,12 @@ CHAINS = {
         'token': 'ETH',
         'chain_id': 534352
     },
+    'zora': {
+        'rpc': 'https://rpc.zora.energy',
+        'scan': 'https://explorer.zora.energy/tx',
+        'token': 'ETH',
+        'chain_id': 7777777
+    },
 }
 
 
