@@ -14,6 +14,7 @@ ORBITER_AMOUNT = {
     'scroll':0.000000000000009019,
     'zkfair':0.000000000000009038,
     'base':0.000000000000009021,
+    'zora':0.000000000000009030,
 }
 
 ORBITER_AMOUNT_STR = {
@@ -30,6 +31,7 @@ ORBITER_AMOUNT_STR = {
     "scroll": "9019",
     "zkfair": "9038",
     "base": "9021",
+    "zora": "9030",
 }
 
 CONTRACTS_ORBITER_TO_STARKNET = {
