@@ -45,6 +45,7 @@ ROUTES = {
     'swap_token_skydrome': {
         'tokens': {
             TOKENS['USDC'],
+            TOKENS['USDT'],
         },
         'function': swap_token_skydrome
 

@@ -624,28 +624,30 @@ def swap_token_skydrome(web3, private_key, _amount, _from_token, _to_token):
     ct = datetime.datetime.now()
     deadline = int(ct.timestamp()) + 60 * 60 * 2
 
+    params = (
+        min_amount_out,
+        [[
+            from_token,
+            to_token,
+            swap_type
+        ]],
+        wallet,
+        deadline
+    )
+
     if from_token == WETH_ADDRESS:
         contract_txn = contract.functions.swapExactETHForTokens(
-            min_amount_out,
-            [[
-                from_token,
-                to_token,
-                swap_type
-            ]],
-            wallet,
-            deadline
+            *params
         )
-    else:
+    elif to_token == WETH_ADDRESS:
         contract_txn = contract.functions.swapExactTokensForETH(
             amount,
-            min_amount_out,
-            [[
-                from_token,
-                to_token,
-                swap_type
-            ]],
-            wallet,
-            deadline
+            *params
+        )
+    else:
+        contract_txn = contract.functions.swapExactTokensForTokens(
+            amount,
+            *params
         )
 
     contract_txn = contract_txn.build_transaction(
