@@ -35,6 +35,28 @@ def send_email(web3, private_key, value=0):
     return tx_hash
 
 
+def rubyscore(web3, private_key, value=0):
+    chain_id = 'scroll'
+    address_contract = web3.to_checksum_address(RUBYSCORE_VOTE_CONTRACT)
+    contract = web3.eth.contract(address=address_contract, abi=RUBYSCORE_VOTE_ABI)
+    wallet = web3.eth.account.from_key(private_key).address
+
+
+    cprint(f'/-- Wallet {wallet} Rubyscore -->', 'green')
+
+    contract_txn = contract.functions.vote().build_transaction({
+        'from': wallet,
+        'nonce': web3.eth.get_transaction_count(wallet),
+        'gasPrice': 0,
+        'gas': 0,
+    })
+
+    contract_txn = add_gas_price(web3, contract_txn, chain_id)
+    contract_txn = add_gas_limit(web3, contract_txn, chain_id)
+    tx_hash = sign_tx(web3, contract_txn, private_key)
+    return tx_hash
+
+
 def generate_email():
     domain_list = ["@gmail.com", "@dmail.ai", '@ukr.net']
 

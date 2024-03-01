@@ -87,3 +87,29 @@ def api_call(url, params=None, headers=None):
         cprint(f'Error: {error}, retry...', 'red')
         time.sleep(3)
         return api_call(url, params, headers)
+
+def post_call(url, params=None, headers=None):
+    proxies=[]
+
+    if USE_PROXY:
+        proxies = get_random_proxy()
+
+    try:
+        response = requests.post(url, json=params, headers=headers, proxies=proxies)
+
+        if response.status_code == 200:
+            api_data = response.json()
+            return api_data
+        else:
+            error_text = response.json()
+            if error_text and error_text['description']:
+                cprint(error_text['description'], 'red')
+
+            cprint(f'Error: status code {response.status_code}, retry...', 'red')
+            time.sleep(3)
+            return post_call(url, params, headers)
+
+    except Exception as error:
+        cprint(f'Error: {error}, retry...', 'red')
+        time.sleep(3)
+        return post_call(url, params, headers)

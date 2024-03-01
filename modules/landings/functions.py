@@ -4,9 +4,11 @@ from loguru import logger
 
 from config.settings import NULL_TOKEN_ADDRESS, NATIVE_TOKEN_ADDRESS
 from helpers.functions import get_min_balance, int_to_wei, sleeping, wei_to_int
-from helpers.web3_helper import get_token_balance, add_gas_price, add_gas_limit, sign_tx, approve_token
+from helpers.web3_helper import get_token_balance, add_gas_price, add_gas_limit, sign_tx, approve_token, price_token, all_prices, \
+    check_allowance
 from modules.landings.config import ERA_LAND_CONTRACTS, ERA_LAND_ABI, LAYERBANK_CONTRACT, LAYERBANK_WETH_CONTRACT, LAYERBANK_ABI, \
-    ZERO_VIX_CONTRACT, ABI_ZERO_VIX
+    ZERO_VIX_CONTRACT, ABI_ZERO_VIX, LAYERBANK_USDC_CONTRACT, BORROW_RATE
+from modules.swaps.config import TOKENS
 
 
 def supply_eth_eralend(web3, private_key, _amount):
@@ -172,6 +174,132 @@ def withdraw_eth_layerbank(web3, private_key, value=0):
     else:
         raise Exception(f'SKIP. No staked ETH')
 
+
+def enable_collateral(web3, private_key, value=0):
+    chain_id = 'scroll'
+    address_contract = web3.to_checksum_address(LAYERBANK_CONTRACT)
+    contract = web3.eth.contract(address=address_contract, abi=LAYERBANK_ABI)
+
+    wallet = web3.eth.account.from_key(private_key).address
+
+    cprint(f'/-- Wallet {wallet} -->', 'green')
+
+    logger.info(
+        f"{wallet}] Enable collateral LAYERBANK | ETH"
+    )
+
+    contract_txn = {
+        'from': wallet,
+        'nonce': web3.eth.get_transaction_count(wallet),
+        'value': 0,
+        'gasPrice': 0,
+        'gas': 0,
+        'chainId': web3.eth.chain_id
+    }
+
+    contract_txn = contract.functions.enterMarkets(
+        [web3.to_checksum_address(LAYERBANK_WETH_CONTRACT)]
+    ).build_transaction(contract_txn)
+
+    contract_txn = add_gas_price(web3, contract_txn, chain_id)
+    contract_txn = add_gas_limit(web3, contract_txn, chain_id)
+    tx_hash = sign_tx(web3, contract_txn, private_key)
+    return tx_hash
+
+
+
+def borrow_usdc(web3, private_key, value=0):
+    chain_id = 'scroll'
+    address_contract = web3.to_checksum_address(LAYERBANK_CONTRACT)
+    contract = web3.eth.contract(address=address_contract, abi=LAYERBANK_ABI)
+
+    wallet = web3.eth.account.from_key(private_key).address
+
+    cprint(f'/-- Wallet {wallet} borrow USDC -->', 'green')
+
+    if value:
+        amount = int_to_wei(value, 6)
+
+    else:
+        value = get_max_borrow_amount(web3, wallet)
+        amount = int_to_wei(value, 6)
+
+    logger.info(
+        f"{wallet}] Borrow from Layerbank | " +
+        f"{value} USDC"
+    )
+
+    contract_txn = {
+        'from': wallet,
+        'nonce': web3.eth.get_transaction_count(wallet),
+        'value': 0,
+        'gasPrice': 0,
+        'gas': 0,
+        'chainId': web3.eth.chain_id
+    }
+
+    contract_txn = contract.functions.borrow(LAYERBANK_USDC_CONTRACT,amount).build_transaction(contract_txn)
+
+    contract_txn = add_gas_price(web3, contract_txn, chain_id)
+    contract_txn = add_gas_limit(web3, contract_txn, chain_id)
+    tx_hash = sign_tx(web3, contract_txn, private_key)
+    return tx_hash
+
+def repay_usdc(web3, private_key, value=0):
+    chain_id = 'scroll'
+    address_contract = web3.to_checksum_address(LAYERBANK_CONTRACT)
+    contract = web3.eth.contract(address=address_contract, abi=LAYERBANK_ABI)
+
+    wallet = web3.eth.account.from_key(private_key).address
+    amount = get_token_balance(web3, wallet, TOKENS['USDC'])
+
+    if amount > 0:
+
+        cprint(f'/-- Wallet {wallet} -->', 'green')
+
+        # if value > 0:
+        logger.info(
+            f"{wallet}] Repay to Layerbank | " +
+            f"{wei_to_int(amount, 6)} USDC"
+        )
+
+        allowance_amount = check_allowance(web3, TOKENS['USDC'], wallet, address_contract)
+        if amount > allowance_amount:
+            cprint(f'/-- Approve token', 'green')
+            approve_token(web3, private_key, chain_id, TOKENS['USDC'], address_contract)
+            sleeping(5, 8)
+
+        contract_txn = {
+            'from': wallet,
+            'nonce': web3.eth.get_transaction_count(wallet),
+            'value': 0,
+            'gasPrice': 0,
+            'gas': 0,
+            'chainId': web3.eth.chain_id
+        }
+
+        contract_txn = contract.functions.repayBorrow(LAYERBANK_USDC_CONTRACT,amount).build_transaction(contract_txn)
+
+        contract_txn = add_gas_price(web3, contract_txn, chain_id)
+        contract_txn = add_gas_limit(web3, contract_txn, chain_id)
+        tx_hash = sign_tx(web3, contract_txn, private_key)
+        return tx_hash
+    else:
+        raise Exception(f'SKIP. No borrowed USDC')
+
+
+
+
+def get_max_borrow_amount(web3, wallet):
+    response = get_lb_data(web3, wallet)
+    if response and response[1] > 0:
+        return round(wei_to_int(response[1], 18) * BORROW_RATE, 2)
+
+def get_lb_data(web3, wallet):
+    address_contract = web3.to_checksum_address(LAYERBANK_CONTRACT)
+    contract = web3.eth.contract(address=address_contract, abi=LAYERBANK_ABI)
+    response = contract.functions.accountLiquidityOf(wallet).call()
+    return response if response else None
 
 def supply_eth_0vix(web3, private_key, _amount):
     chain = 'polygon_zkevm'

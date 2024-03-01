@@ -3,7 +3,7 @@ from helpers.csv_helper import start_csv
 from helpers.factory import run_script, run_random_swap, run_multiple, call_function
 from helpers.settings_helper import get_private_keys
 from modules.functions.functions import *
-from modules.landings.functions import supply_eth_layerbank, withdraw_eth_layerbank
+from modules.landings.functions import supply_eth_layerbank, withdraw_eth_layerbank, enable_collateral, borrow_usdc, repay_usdc
 from modules.run_layer_zero.functions import merkly_v2
 from modules.swaps.functions import *
 
@@ -20,6 +20,10 @@ def interface_others():
             cprint(f'7. Deposit LayerBank', 'yellow')
             cprint(f'8. Withdraw LayerBank', 'yellow')
             cprint(f'9. Create Nft Collection Omnisea', 'yellow')
+            cprint(f'10. Enable Collateral Layerbank', 'yellow')
+            cprint(f'11. Borrow USDC Layerbank', 'yellow')
+            cprint(f'12. Repay USDC Layerbank', 'yellow')
+            cprint(f'13. Vote Rubyscore', 'yellow')
 
             cprint(f'0. Exit', 'yellow')
             option = input("> ")
@@ -80,7 +84,24 @@ def interface_others():
             elif option == '9':
                 run_script(create_omnisea_collection, 'scroll', 0)
 
+            elif option == '10':
+                run_script(enable_collateral, 'scroll', 0)
 
+
+            elif option == '11':
+                amount_str = print_input_amounts_range('Borrow amount')
+
+                run_script(borrow_usdc, 'scroll', amount_str)
+
+
+            elif option == '12':
+
+                run_script(repay_usdc, 'scroll', 0)
+
+
+            elif option == '13':
+
+                run_script(rubyscore, 'scroll', 0)
 
 
             else:

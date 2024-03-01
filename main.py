@@ -6,6 +6,7 @@ from modules.balance.module import interface_check_balance
 from modules.contracts.module import interface_contracts
 from modules.exchange_withdraw.module import interface_exchange_withdraw
 from modules.functions.module import interface_others
+from modules.nitro_bridge.module import interface_nitro_bridge
 from modules.orbiter_bridge.module import interface_orbiter_bridge
 from modules.run_layer_zero.functions import merkly_v2
 from modules.run_layer_zero.module import interface_usdv
@@ -28,6 +29,7 @@ if __name__ == '__main__':
 
             cprint(f'-------- BRIDGE/SWAP/NFT/LEND/etc --------', 'blue')
             cprint(f'4. Orbiter Bridge', 'yellow')
+            cprint(f'15. Nitro ETH Bridge', 'yellow')
             cprint(f'5. Swaps on Dex', 'yellow')
             cprint(f'10. Nft/Lendings/DMAIL/etc', 'yellow')
 
@@ -116,15 +118,20 @@ if __name__ == '__main__':
 
             elif option == '14':
 
-                from_network = 'scroll'
+                from_network = 'bsc'
                 to_network = ''
                 params = [from_network, to_network]
 
-                run_script(merkly_v2, 'scroll', '', params)
+                run_script(merkly_v2, 'bsc', '', params)
+
+            elif option == '15':
+                interface_nitro_bridge()
+                break
 
             else:
                 cprint(f'Wrong action. Please try again.\n', 'red')
                 continue
+
 
 
     except KeyboardInterrupt:
