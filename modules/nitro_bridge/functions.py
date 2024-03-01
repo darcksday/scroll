@@ -1,14 +1,7 @@
-import decimal
-import time
-
-from helpers.settings_helper import get_random_proxy
 from helpers.web3_helper import *
 from modules.nitro_bridge.config import NITRO_MIN_AMOUNT
 from modules.orbiter_bridge.config import *
 from helpers.functions import int_to_wei, get_min_balance, api_call, post_call
-from web3.middleware import construct_sign_and_send_raw_middleware
-from web3.middleware import geth_poa_middleware
-from modules.transfer.functions import map_recipients
 
 
 def nitro_eth_bridge(web3, private_key: str, _amount: float, from_chain: str, to_chain: str):

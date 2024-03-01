@@ -1,5 +1,6 @@
-from modules.functions.config import DMAIL_CONTRACT, SAFE_CONTRACT, NFT_ORIGINS_CONTRACT, OMNISEA_CONTRACT
-from modules.functions.functions import create_omnisea_collection, mint_origin_nft, mint_zkstars, safe_create, send_email, mint_nfts2_me
+from modules.functions.config import DMAIL_CONTRACT, SAFE_CONTRACT, NFT_ORIGINS_CONTRACT, OMNISEA_CONTRACT, RUBYSCORE_VOTE_CONTRACT
+from modules.functions.functions import create_omnisea_collection, mint_origin_nft, mint_zkstars, safe_create, send_email, mint_nfts2_me, \
+    rubyscore
 from modules.landings.config import LAYERBANK_CONTRACT
 from modules.landings.functions import withdraw_eth_layerbank, supply_eth_layerbank
 from modules.run_layer_zero.config import MERKLEY_BRIDGE_CONTRACTS_V2
@@ -32,6 +33,7 @@ ALL_FUNCTIONS = {
     "0xBA396fF993947b06945CB5Ed9dEc31a8fc981F5A": mint_nfts2_me,
     "0x874ADe3582354D3A30Bb484607717e6e61b8619B": mint_nfts2_me,
     MERKLEY_BRIDGE_CONTRACTS_V2['scroll']: merkly_v2,
+    RUBYSCORE_VOTE_CONTRACT: rubyscore,
 
 
 
