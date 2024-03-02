@@ -50,13 +50,13 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
 
     call_exchange_withdraw(wallet_address, round(amount + 0.0002, 4), 'ETH', 'Linea', 'okx')
     sleeping(MIN_SLEEP, MAX_SLEEP)
-
+    line_orb_fee=0.0005
     # ------------------ Start Bridge ------------------
     random.shuffle(NETWORKS)
     for bridge_network in NETWORKS:
         amount = check_wait_web3_balance(web3_linea, 'linea', wallet_address, '', amount * 0.98)
         #  balance left linea
-        amount = amount - get_min_balance('linea')
+        amount = amount - get_min_balance('linea')-line_orb_fee
 
         # BRIDGE FROM LINEA TO RANDOM NETWORK
         params = ['linea', bridge_network]
@@ -72,11 +72,11 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
         amount = check_wait_web3_balance(web3_random, bridge_network, wallet_address, '', amount * 0.98)
         params2 = [bridge_network, 'linea']
         #  balance left on random network
-        amount = amount - get_min_balance(bridge_network)
+        amount = amount - get_min_balance(bridge_network)-line_orb_fee
         run_script_one(orbiter_eth_bridge, item['private_key'], bridge_network, str(amount), params2)
 
     amount = check_wait_web3_balance(web3_linea, 'linea', wallet_address, '', amount * 0.98)
-    amount = amount - get_min_balance('linea')
+    amount = amount - get_min_balance('linea')-line_orb_fee
 
     if END_NETWORK=='arbitrum' or END_NETWORK=='optimism':
         web3 = Web3(Web3.HTTPProvider(CHAINS[END_NETWORK]['rpc']))
