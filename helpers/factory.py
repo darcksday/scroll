@@ -47,12 +47,12 @@ def call_function(item, method, rpc_chain, _amount, params=[], csv='', retry=0):
         if status == 1:
             logger.success(f'{STR_DONE} {rpc_chain} transaction: {tx_link}')
 
-            write_csv_success(item['index'], {
-                'status': 1,
-                'csv_name': csv_name,
-                'function': method.__name__,
-                'date': formatted_datetime,
-            })
+            # write_csv_success(item['index'], {
+            #     'status': 1,
+            #     'csv_name': csv_name,
+            #     'function': method.__name__,
+            #     'date': formatted_datetime,
+            # })
             return True
         else:
             raise Exception(f'{rpc_chain} transaction failed: {tx_link}')
