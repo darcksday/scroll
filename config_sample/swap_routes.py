@@ -51,20 +51,18 @@ ROUTES = {
 
     },
 
-    'swap_ambient': {
-        'tokens': {
-            TOKENS['USDC'],
-            TOKENS['USDT'],
-            TOKENS['DAI'],
-        },
-        'function': swap_ambient
-
-    },
+    # 'swap_ambient': {
+    #     'tokens': {
+    #         TOKENS['USDC'],
+    #         TOKENS['USDT'],
+    #     },
+    #     'function': swap_ambient
+    #
+    # },
     'swap_izumi': {
         'tokens': {
             TOKENS['USDC'],
             TOKENS['USDT'],
-            TOKENS['DAI'],
         },
         'function': swap_izumi
 

@@ -105,7 +105,6 @@ def run_script_one(method, private_key, chain, _amount, params=[], repeat=0):
         else:
             raise Exception(f'{chain} transaction failed: {tx_link}')
     except Exception as error:
-        print(123)
         exc_type, exc_obj, exc_tb = sys.exc_info()
         err_formated = f'{str(error)}. {exc_tb.tb_frame.f_code.co_filename}, line: {exc_tb.tb_lineno}'
         logger.error(err_formated)
@@ -117,3 +116,5 @@ def run_script_one(method, private_key, chain, _amount, params=[], repeat=0):
             raise Exception(f'{chain} Repeat limit exceeded')
 
     sleeping(MIN_SLEEP, MAX_SLEEP)
+
+
