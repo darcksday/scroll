@@ -96,8 +96,8 @@ def run_random_swap(routes, rpc_chain, _amount, specific_prt={}):
     if SCHEDULE_TIME:
         wait_schedule(SCHEDULE_TIME)
 
-    csv_name_1 = 'random_zk_swap_1'
-    csv_name_2 = 'random_zk_swap_2'
+    csv_name_1 = 'random_swap_1'
+    csv_name_2 = 'random_swap_2'
     start_csv(csv_name_1)
     start_csv(csv_name_2)
 

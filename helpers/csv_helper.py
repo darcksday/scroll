@@ -35,9 +35,9 @@ def write_csv_success(index, data):
             rows = list(reader)
 
             if index < len(rows):
-                rows[index][3] = data['status']
-                rows[index][4] = function_name
-                rows[index][5] = data['date']
+                rows[index][5] = data['status']
+                rows[index][6] = function_name
+                rows[index][7] = data['date']
 
         with open(f'results/{csv_name}.csv', 'w') as file:
             writer = csv.writer(file)
