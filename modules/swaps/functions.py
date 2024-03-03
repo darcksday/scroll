@@ -10,7 +10,7 @@ from config.settings import *
 from helpers.functions import int_to_wei, sleeping, wei_to_int, get_min_balance
 
 from modules.swaps.config import *
-from eth_abi import encode
+from eth_abi import encode, abi
 from time import time
 
 
@@ -761,18 +761,27 @@ def swap_ambient(web3, private_key, _amount, _from_token, _to_token):
         quote=to_token
 
 
-    contract_txn = contract.functions.swap(
-        base,
-        quote,
-        pool_idx,
-        is_buy,
-        is_buy,
-        amount,
-        tip,
-        limit_price,
-        min_amount_out,
-        reserve_flags
 
+
+    encode_data = abi.encode(
+        ['address', 'address', 'uint16', 'bool', 'bool', 'uint256', 'uint8', 'uint256', 'uint256', 'uint8'], [
+            base,
+            quote,
+            pool_idx,
+            is_buy,
+            is_buy,
+            amount,
+            tip,
+            limit_price,
+            min_amount_out,
+            reserve_flags
+        ]
+    )
+
+
+    contract_txn = contract.functions.userCmd(
+        1,
+        encode_data
     )
 
     contract_txn = contract_txn.build_transaction(
