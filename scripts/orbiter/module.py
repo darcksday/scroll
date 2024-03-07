@@ -105,15 +105,6 @@ def run_orbiter_bridge_eth(web3_linea, item, recipient_wallet):
             cprint(f"/-- {main_acc_balance} ETH found", "green")
             break
         else:
-            for sub_account_num in range(1, 6):
-                if len(config[f'OKX_SUB{sub_account_num}_API_KEY']) > 0:
-                    cprint(f"/-- Check OKX subAccount {config[f'OKX_SUB{sub_account_num}_NAME']}", "blue")
-                    acc_balance = get_okx_token_balance(sub_account_num, 'ETH')
-                    if acc_balance >= amount * 0.99:
-                        cprint(f"{acc_balance} ETH found, transfer to OKX main account", "green")
-                        account = get_okx_account()
-                        account.transfer("ETH", acc_balance, config[f'OKX_SUB{sub_account_num}_NAME'], 'master')
-                        time.sleep(2)
-                        break
+            tranfer_from_subs_okx()
         sleeping(MIN_SLEEP * 2, MAX_SLEEP * 2)
         continue

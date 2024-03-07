@@ -3,10 +3,16 @@ import time
 import sys
 from dotenv import dotenv_values
 from loguru import logger
+from termcolor import cprint
+
 from config.settings import CHAINS, STR_DONE, MIN_SLEEP, MAX_SLEEP
 from helpers.cli import get_amount_in_range
 from helpers.functions import sleeping
 from helpers.web3_helper import  check_status_tx, get_web3
+from okx.SubAccount import SubAccountAPI
+
+
+
 
 config = dotenv_values("config/.env")
 
@@ -30,9 +36,45 @@ def get_okx_account(sub_account=0):
         }
     })
 
+def get_okx_sub():
+    return SubAccountAPI(
+        api_key=config['OKX_API_KEY'],
+        api_secret_key=config['OKX_API_SECRET'],
+        passphrase=config['OKX_PASSWORD'],
+        flag='0',
+        debug=False
+        )
+
+
+def tranfer_from_subs_okx(token='ETH'):
+    okx_main_account = get_okx_account()
+    okx_sub_account = get_okx_sub()
+    accounts=okx_sub_account.get_subaccount_list()
+
+
+
+    for account in accounts['data']:
+        response = okx_sub_account.get_funding_balance(
+            subAcct=account['subAcct'],
+            ccy=token
+        )
+        if response['code'] != '0':
+            cprint(f"Error: {response['msg']}", "red")
+            continue
+
+        cprint(f"/-- Check {token} subAccount {account['subAcct']} ", "blue")
+        balance = float(response['data'][0]['availBal'])
+        balance = int(balance * 10**8) / 10**8
+
+        if balance>0:
+            cprint(f"{balance} ETH found, transfer to OKX main account", "green")
+            okx_main_account.transfer(token, balance,account['subAcct'], 'master')
+            time.sleep(2)
+
 
 def get_okx_token_balance(sub_account=0, token='USDT'):
     okx_main_account = get_okx_account(sub_account)
+
     balances = okx_main_account.fetch_balance({"ccy": token, "type": "funding"})
     return balances['free'][token]
 

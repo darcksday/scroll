@@ -11,6 +11,7 @@ from modules.orbiter_bridge.module import interface_orbiter_bridge
 from modules.run_layer_zero.functions import merkly_v2
 from modules.run_layer_zero.module import interface_usdv
 from modules.swaps.module import interface_swaps
+from modules.to_eth.module import swap_to_eth
 from modules.transfer.module import interface_transfer
 from config.lz_config  import *
 from modules.unused_contracts.module import run_unused_fn
@@ -53,8 +54,9 @@ if __name__ == '__main__':
 
             cprint(f'---------- Unused Functions ----------', 'blue')
             cprint(f'13. Find and run unused contracts ', 'yellow')
+            cprint(f'---------------------------------', 'blue')
 
-            # cprint(f'10. Orbiter: Bridge {USDT_AMOUNT}USDC: OKX->OP[LINEA->RANDOM NETWORKS->LINEA]->OP->OKX', 'yellow')
+            cprint(f'16. Swap all tokens to ETH', 'yellow')
 
 
             option = input("> ")
@@ -126,6 +128,10 @@ if __name__ == '__main__':
 
             elif option == '15':
                 interface_nitro_bridge()
+                break
+
+            elif option == '16':
+                swap_to_eth('scroll')
                 break
 
             else:

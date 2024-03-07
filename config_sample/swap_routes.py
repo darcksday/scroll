@@ -62,7 +62,7 @@ ROUTES = {
     'swap_izumi': {
         'tokens': {
             TOKENS['USDC'],
-            TOKENS['USDT'],
+            # TOKENS['USDT'],
         },
         'function': swap_izumi
 

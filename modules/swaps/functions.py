@@ -938,7 +938,9 @@ def get_path_izumi(web3,from_token: str, to_token: str):
 
     pool_fee_info = {
             "USDC/ETH": 3000,
+            "USDT/ETH": 3000,
             "ETH/USDC": 3000,
+            "ETH/USDT": 3000,
             "USDC/USDT": 500,
             "USDT/USDC": 500
     }
@@ -948,15 +950,6 @@ def get_path_izumi(web3,from_token: str, to_token: str):
     to_token_bytes = HexBytes(to_token).rjust(20, b'\0')
     fee_bytes = pool_fee_info[f"{from_token_name}/{to_token_name}"].to_bytes(3, 'big')
     return from_token_bytes + fee_bytes + to_token_bytes
-    # else:
-    #     from_token_bytes = HexBytes(from_token).rjust(20, b'\0')
-    #     index_1 = f'{from_token_name}/USDC'
-    #     fee_bytes_1 = pool_fee_info[index_1].to_bytes(3, 'big')
-    #     middle_token_bytes = HexBytes(TOKENS['USDC']).rjust(20, b'\0')
-    #     index_2 = f'USDC/{to_token_name}'
-    #     fee_bytes_2 = pool_fee_info[index_2].to_bytes(3, 'big')
-    #     to_token_bytes = HexBytes(to_token).rjust(20, b'\0')
-    #     return from_token_bytes + fee_bytes_1 + middle_token_bytes + fee_bytes_2 + to_token_bytes
 
 
 def get_min_amount_out_iz(contract,path,amount):
@@ -966,3 +959,107 @@ def get_min_amount_out_iz(contract,path,amount):
     ).call()
 
     return int(min_amount_out - (min_amount_out / 100 * SLIPPAGE))
+
+
+def swap_sushi(web3, private_key, _amount, _from_token, _to_token):
+    chain = 'scroll'
+    from_token = _from_token
+    to_token = _to_token
+
+    address_contract = web3.to_checksum_address(ZEBRA_CONTRACTS['router'])
+    wallet = web3.eth.account.from_key(private_key).address
+    contract = web3.eth.contract(address=address_contract, abi=ZEBRA_ABI)
+
+    cprint(f'/-- Start Zebra swap for wallet {wallet} -->', 'green')
+    balance = get_token_balance(web3, wallet, from_token)
+    min_balance = get_min_balance(chain)
+
+    # Token
+    if from_token != '':
+        token_contract, decimals, symbol = check_data_token(web3, from_token)
+    else:
+        decimals = 18
+        symbol = CHAINS[chain]['token']
+        from_token = WETH_ADDRESS
+    min_transaction_amount = int_to_wei(MIN_TRANSACTION_AMOUNT, decimals)
+
+    if to_token == '':
+        to_token = WETH_ADDRESS
+
+    # Amount
+    amount = 0
+    if not _amount:
+        if from_token == WETH_ADDRESS:
+            if balance > int_to_wei(min_balance, decimals):
+                amount = int(balance - int_to_wei(min_balance, decimals))
+        else:
+            # amount = balance * 0.999999
+            amount = balance
+        cprint(f'/-- Amount: {wei_to_int(amount, decimals)} {symbol}', 'green')
+    else:
+        amount = int_to_wei(_amount, decimals)
+
+    if not amount and from_token == WETH_ADDRESS:
+        raise Exception(f'SKIP. Insufficient balance, min balance: {min_balance} {symbol}')
+    elif amount > balance:
+        raise Exception(f'SKIP. Not enough balance: {wei_to_int(balance, decimals)} {symbol}')
+    elif amount < min_transaction_amount:
+        raise Exception(f'SKIP. Min transaction amount: {wei_to_int(min_transaction_amount, decimals)} {symbol}')
+
+    # check and approve not native token
+    if from_token != WETH_ADDRESS:
+        allowance_amount = check_allowance(web3, from_token, wallet, address_contract)
+        if amount > allowance_amount:
+            cprint(f'/-- Approve token: {symbol}', 'green')
+            approve_token(web3, private_key, chain, from_token, address_contract)
+            sleeping(5, 10)
+
+
+
+    from_token = web3.to_checksum_address(from_token)
+    to_token = web3.to_checksum_address(to_token)
+    min_amount_out = get_min_amount_out_zb(contract, from_token, to_token, amount)
+    deadline = int(time()+ 60 * 60 * 2)
+
+    params=(
+        min_amount_out,
+        [
+            from_token,
+            to_token,
+        ],
+        wallet,
+        deadline
+    )
+
+
+
+    if from_token == WETH_ADDRESS:
+        contract_txn = contract.functions.swapExactETHForTokens(
+            *params
+        )
+    elif to_token==WETH_ADDRESS:
+        contract_txn = contract.functions.swapExactTokensForETH(
+            amount,
+            *params
+        )
+    else:
+        contract_txn = contract.functions.swapExactTokensForTokens(
+            amount,
+            *params
+        )
+
+    contract_txn = contract_txn.build_transaction(
+        {
+            'from': wallet,
+            'nonce': web3.eth.get_transaction_count(wallet),
+            'value': amount if from_token == WETH_ADDRESS else 0,
+            'gasPrice': 0,
+            'gas': 0,
+        }
+    )
+
+    contract_txn = add_gas_price(web3, contract_txn, chain)
+    contract_txn = add_gas_limit(web3, contract_txn, chain)
+
+    tx_hash = sign_tx(web3, contract_txn, private_key)
+    return tx_hash
