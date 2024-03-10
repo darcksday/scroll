@@ -38,7 +38,7 @@ def swap_to_eth(rpc_chain):
                 if token_address in [TOKENS['WBTC'],TOKENS['DAI']]:
                     dex = xy_swap
 
-                run_script(dex, 'zksync', amount_str, params,key)
+                run_script(dex, 'scroll', amount_str, params,key)
                 time.sleep(1)
 
 
