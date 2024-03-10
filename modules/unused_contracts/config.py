@@ -15,7 +15,7 @@ ALL_FUNCTIONS = {
     # XYSWAP_CONTRACT: xy_swap,
     # LAYERBANK_CONTRACT: [supply_eth_layerbank, withdraw_eth_layerbank],
 
-    NFT_ORIGINS_CONTRACT: mint_origin_nft,
+    # NFT_ORIGINS_CONTRACT: mint_origin_nft,
 
     SYNCSWAP_CONTRACTS['router']: swap_token_syncswap,
     ZEBRA_CONTRACTS['router']: swap_token_zebra,
