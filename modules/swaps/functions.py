@@ -7,7 +7,7 @@ from config.settings import SLIPPAGE
 from helpers.settings_helper import get_random_proxy
 from helpers.web3_helper import *
 from config.settings import *
-from helpers.functions import int_to_wei, sleeping, wei_to_int, get_min_balance
+from helpers.functions import int_to_wei, sleeping, wei_to_int, get_min_balance, api_call
 
 from modules.swaps.config import *
 from eth_abi import encode, abi
@@ -74,10 +74,10 @@ def open_ocean(web3, private_key, _amount, from_token, to_token):
         }
 
         # if USE_REF:
-        params.update({
-            "referrer": Web3.to_checksum_address("0x28faD3430EcA42e3F89eD585eB10ceB9be35f7b9"),
-            "referrerFee": 0.03
-        })
+        # params.update({
+        #     "referrer": Web3.to_checksum_address("0x28faD3430EcA42e3F89eD585eB10ceB9be35f7b9"),
+        #     "referrerFee": 0.03
+        # })
 
         response = ocean_request(params)
 
@@ -257,16 +257,19 @@ def swap_token_syncswap(web3, private_key, _amount, _from_token, _to_token):
             if balance > int_to_wei(min_balance, decimals):
                 amount = int(balance - int_to_wei(min_balance, decimals))
         else:
-            # amount = balance * 0.999999
             amount = balance
-        cprint(f'/-- Amount: {wei_to_int(amount, decimals)} {symbol}', 'green')
     else:
         amount = int_to_wei(_amount, decimals)
+
 
     from_token = web3.to_checksum_address(from_token)
     to_token = web3.to_checksum_address(to_token)
     pool_address = get_syncswap_pool(web3, from_token, to_token)
     min_amount_out = get_min_amount_out(web3, pool_address, from_token, amount, wallet)
+
+    _, decimals2, symbol2 = check_data_token(web3, to_token)
+    cprint(f'/-- Swap: {wei_to_int(amount, decimals)} {symbol} to {symbol2}', 'green')
+    price_impact_defender(symbol, symbol2, wei_to_int(amount, decimals), wei_to_int(min_amount_out, decimals2))
 
     if not amount and from_token == WETH_ADDRESS:
         raise Exception(f'SKIP. Insufficient balance, min balance: {min_balance} {symbol}')
@@ -275,7 +278,7 @@ def swap_token_syncswap(web3, private_key, _amount, _from_token, _to_token):
     elif amount < min_transaction_amount:
         raise Exception(f'SKIP. Min transaction amount: {wei_to_int(min_transaction_amount, decimals)} {symbol}')
     else:
-        contract = web3.eth.contract(address=address_contract, abi=ABI_SYNC_SWAP)
+        contract = web3.eth.contract(address=address_contract, abi=SYNCSWAP_ABI['router'])
 
         # check and approve not native token
         if from_token != WETH_ADDRESS:
@@ -291,41 +294,46 @@ def swap_token_syncswap(web3, private_key, _amount, _from_token, _to_token):
             value = amount
             token_in = NULL_TOKEN_ADDRESS
 
+        withdraw_mode = 2
+
         swap_data = encode(['address', 'address', 'uint8'], [
-            from_token, wallet, 1
+            from_token, wallet, withdraw_mode
         ])
 
-        steps = [{
-            'pool': pool_address,
-            'data': swap_data,
-            'callback': NULL_TOKEN_ADDRESS,
-            'callbackData': b''
-        }]
+        steps = [
+             pool_address,
+             web3.to_hex(swap_data),
+             NULL_TOKEN_ADDRESS,
+             '0x',
+        ]
 
-        path = [{
-            'steps': steps,
-            'tokenIn': token_in,
-            'amountIn': amount
-        }]
 
-        deadline = int(time() + 60 * 60 * 2)
+
+        path = [
+             [steps],
+             token_in,
+             amount
+        ]
+
+
+
+
+        deadline = int(time()) + 1800
+
+
         if from_token == WETH_ADDRESS or to_token == WETH_ADDRESS:
             contract_txn = contract.functions.swap(
-                path,
+                [path],
                 min_amount_out,
                 deadline
             )
 
         else:
-            contract_txn = contract.functions.swapWithPermit(
-                path,
+            sign_permission(web3, private_key, from_token)
+            contract_txn = contract.functions.swap(
+                [path],
                 min_amount_out,
-                deadline,
-                [
-                    from_token,
-                    2 ** 256 - 1,
-                    *(sign_permission(web3, private_key,from_token))
-                ]
+                deadline
             )
 
         contract_txn = contract_txn.build_transaction(
@@ -345,13 +353,17 @@ def swap_token_syncswap(web3, private_key, _amount, _from_token, _to_token):
         return tx_hash
 
 
+
+
+
+
 def get_syncswap_pool(web3, from_token, to_token):
     if from_token==WETH_ADDRESS or to_token==WETH_ADDRESS:
         contract_address=SYNCSWAP_CONTRACTS["classic_pool"]
     else:
         contract_address=SYNCSWAP_CONTRACTS["stable_pool"]
 
-    pool_contract = web3.eth.contract(address=contract_address, abi=SYNCSWAP_CLASSIC_POOL_ABI)
+    pool_contract = web3.eth.contract(address=contract_address, abi=SYNCSWAP_ABI['classic_pool_factory'])
     return pool_contract.functions.getPool(
         from_token,
         to_token
@@ -367,7 +379,7 @@ def sign_permission(web3, private_key, from_token):
     }
     domain, version=token_data[token_name]
 
-    deadline = int(time() + 60 * 60 * 2)
+    deadline =int(time()) + 1800
 
 
     sign_data = {
@@ -437,7 +449,7 @@ def sign_permission(web3, private_key, from_token):
 
 
 def get_min_amount_out(web3, pool_address, token_address, amount, wallet):
-    pool_contract = web3.eth.contract(pool_address, abi=SYNCSWAP_CLASSIC_POOL_DATA_ABI)
+    pool_contract = web3.eth.contract(pool_address, abi=SYNCSWAP_ABI['classic_pool'])
 
     min_amount_out = pool_contract.functions.getAmountOut(
         token_address,
@@ -457,6 +469,7 @@ def get_min_amount_out_zb(contract, from_token, to_token, amount):
         ]
     ).call()
     return int(min_amount_out[1] - (min_amount_out[1] / 100 * SLIPPAGE))
+
 
 
 def swap_token_zebra(web3, private_key, _amount, _from_token, _to_token):
@@ -491,9 +504,7 @@ def swap_token_zebra(web3, private_key, _amount, _from_token, _to_token):
             if balance > int_to_wei(min_balance, decimals):
                 amount = int(balance - int_to_wei(min_balance, decimals))
         else:
-            # amount = balance * 0.999999
             amount = balance
-        cprint(f'/-- Amount: {wei_to_int(amount, decimals)} {symbol}', 'green')
     else:
         amount = int_to_wei(_amount, decimals)
 
@@ -517,6 +528,11 @@ def swap_token_zebra(web3, private_key, _amount, _from_token, _to_token):
     from_token = web3.to_checksum_address(from_token)
     to_token = web3.to_checksum_address(to_token)
     min_amount_out = get_min_amount_out_zb(contract, from_token, to_token, amount)
+
+    _, decimals2, symbol2 = check_data_token(web3, to_token)
+    cprint(f'/-- Swap: {wei_to_int(amount, decimals)} {symbol} to {symbol2}', 'green')
+    price_impact_defender(symbol, symbol2, wei_to_int(amount, decimals), wei_to_int(min_amount_out, decimals2))
+
     deadline = int(time()+ 60 * 60 * 2)
 
     params=(
@@ -621,6 +637,11 @@ def swap_token_skydrome(web3, private_key, _amount, _from_token, _to_token):
     from_token = web3.to_checksum_address(from_token)
     to_token = web3.to_checksum_address(to_token)
     min_amount_out,swap_type = get_min_amount_out_sd(contract, from_token, to_token, amount)
+
+    _, decimals2, symbol2 = check_data_token(web3, to_token)
+    cprint(f'/-- Swap: {wei_to_int(amount, decimals)} {symbol} to {symbol2}', 'green')
+    price_impact_defender(symbol, symbol2, wei_to_int(amount, decimals), wei_to_int(min_amount_out, decimals2))
+
     ct = datetime.datetime.now()
     deadline = int(ct.timestamp()) + 60 * 60 * 2
 
@@ -711,9 +732,7 @@ def swap_ambient(web3, private_key, _amount, _from_token, _to_token):
             if balance > int_to_wei(min_balance, decimals):
                 amount = int(balance - int_to_wei(min_balance, decimals))
         else:
-            # amount = balance * 0.999999
             amount = balance
-        cprint(f'/-- Amount: {wei_to_int(amount, decimals)} {symbol}', 'green')
     else:
         amount = int_to_wei(_amount, decimals)
 
@@ -739,6 +758,11 @@ def swap_ambient(web3, private_key, _amount, _from_token, _to_token):
 
 
     min_amount_out=get_min_amount_out_amb(web3,from_token,to_token,amount)
+
+    _, decimals2, symbol2 = check_data_token(web3, to_token)
+    cprint(f'/-- Swap: {wei_to_int(amount, decimals)} {symbol} to {symbol2}', 'green')
+    price_impact_defender(symbol, symbol2, wei_to_int(amount, decimals), wei_to_int(min_amount_out, decimals2))
+
     pool_idx = 420
     reserve_flags = 0
     tip = 0
@@ -851,9 +875,7 @@ def swap_izumi(web3, private_key, _amount, _from_token, _to_token):
             if balance > int_to_wei(min_balance, decimals):
                 amount = int(balance - int_to_wei(min_balance, decimals))
         else:
-            # amount = balance * 0.999999
             amount = balance
-        cprint(f'/-- Amount: {wei_to_int(amount, decimals)} {symbol}', 'green')
     else:
         amount = int_to_wei(_amount, decimals)
 
@@ -881,6 +903,10 @@ def swap_izumi(web3, private_key, _amount, _from_token, _to_token):
 
     path=get_path_izumi(web3,from_token,to_token)
     min_amount_out = get_min_amount_out_iz(quoter_contract, path, amount)
+
+    _, decimals2, symbol2 = check_data_token(web3, to_token)
+    cprint(f'/-- Swap: {wei_to_int(amount, decimals)} {symbol} to {symbol2}', 'green')
+    price_impact_defender(symbol, symbol2, wei_to_int(amount, decimals), wei_to_int(min_amount_out, decimals2))
 
     tx_data = contract.encodeABI(
         fn_name='swapAmount',
@@ -966,11 +992,11 @@ def swap_sushi(web3, private_key, _amount, _from_token, _to_token):
     from_token = _from_token
     to_token = _to_token
 
-    address_contract = web3.to_checksum_address(ZEBRA_CONTRACTS['router'])
+    address_contract = web3.to_checksum_address(SUSHISWAP_CONTRACTS)
     wallet = web3.eth.account.from_key(private_key).address
-    contract = web3.eth.contract(address=address_contract, abi=ZEBRA_ABI)
+    contract = web3.eth.contract(address=address_contract, abi=SUSHISWAP_ABI)
 
-    cprint(f'/-- Start Zebra swap for wallet {wallet} -->', 'green')
+    cprint(f'/-- Start Sushi swap for wallet {wallet} -->', 'green')
     balance = get_token_balance(web3, wallet, from_token)
     min_balance = get_min_balance(chain)
 
@@ -993,7 +1019,6 @@ def swap_sushi(web3, private_key, _amount, _from_token, _to_token):
             if balance > int_to_wei(min_balance, decimals):
                 amount = int(balance - int_to_wei(min_balance, decimals))
         else:
-            # amount = balance * 0.999999
             amount = balance
         cprint(f'/-- Amount: {wei_to_int(amount, decimals)} {symbol}', 'green')
     else:
@@ -1018,48 +1043,60 @@ def swap_sushi(web3, private_key, _amount, _from_token, _to_token):
 
     from_token = web3.to_checksum_address(from_token)
     to_token = web3.to_checksum_address(to_token)
-    min_amount_out = get_min_amount_out_zb(contract, from_token, to_token, amount)
-    deadline = int(time()+ 60 * 60 * 2)
-
-    params=(
-        min_amount_out,
-        [
-            from_token,
-            to_token,
-        ],
-        wallet,
-        deadline
-    )
 
 
 
-    if from_token == WETH_ADDRESS:
-        contract_txn = contract.functions.swapExactETHForTokens(
-            *params
+
+    result = api_call(f"https://api.sushi.com/swap/v4/{web3.eth.chain_id}",{
+        'tokenIn':from_token,
+        'tokenOut':to_token,
+        'amount':amount,
+        'maxPriceImpact':'0.005',
+        'to':wallet,
+        'preferSushi':True,
+
+    })
+
+    if result['routeProcessorArgs']:
+        args=result['routeProcessorArgs'];
+
+        contract_txn = contract.functions.processRoute(
+            args['tokenIn'],
+            int(args['amountIn']),
+            args['tokenOut'],
+            int(args['amountOutMin']),
+            args['to'],
+            args['routeCode']
+
+
+
+        ).build_transaction(
+            {
+                'from': wallet,
+                'nonce': web3.eth.get_transaction_count(wallet),
+                'value': amount if from_token == WETH_ADDRESS else 0,
+                'gasPrice': 0,
+                'gas': 0,
+            }
         )
-    elif to_token==WETH_ADDRESS:
-        contract_txn = contract.functions.swapExactTokensForETH(
-            amount,
-            *params
-        )
-    else:
-        contract_txn = contract.functions.swapExactTokensForTokens(
-            amount,
-            *params
-        )
 
-    contract_txn = contract_txn.build_transaction(
-        {
-            'from': wallet,
-            'nonce': web3.eth.get_transaction_count(wallet),
-            'value': amount if from_token == WETH_ADDRESS else 0,
-            'gasPrice': 0,
-            'gas': 0,
-        }
-    )
 
     contract_txn = add_gas_price(web3, contract_txn, chain)
     contract_txn = add_gas_limit(web3, contract_txn, chain)
 
+
     tx_hash = sign_tx(web3, contract_txn, private_key)
     return tx_hash
+
+
+def price_impact_defender(from_token_name,to_token_name,from_token_amount,to_token_amount):
+
+
+    token1_usd = float(price_token(all_prices(), from_token_name))*from_token_amount
+    token2_usd = float(price_token(all_prices(), to_token_name))*to_token_amount
+
+    price_impact = 100 - (token2_usd / token1_usd) * 100
+
+
+    if price_impact > PRICE_IMPACT:
+        raise Exception(f'SKIP. Price impact is too high: {price_impact}% > {PRICE_IMPACT}%')

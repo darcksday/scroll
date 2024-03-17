@@ -16,6 +16,7 @@ def interface_swaps():
             cprint(f'5. Swap tokens / app.skydrome.finance', 'yellow')
             cprint(f'6. Swap tokens / ambient.finance', 'yellow')
             cprint(f'7. Swap tokens / izumi.finance', 'yellow')
+            cprint(f'8. Swap tokens / sushi.com', 'yellow')
 
 
 
@@ -95,6 +96,16 @@ def interface_swaps():
                 params = [from_token, to_token]
 
                 run_script(swap_izumi, 'scroll', amount_str, params)
+
+
+            elif option == '8':
+                # open ocean swap
+                from_token = print_input_contract_address("From token")
+                to_token = print_input_contract_address("To token")
+                amount_str = print_input_amounts_range('Swap amount')
+                params = [from_token, to_token]
+
+                run_script(swap_sushi, 'scroll', amount_str, params)
 
 
 

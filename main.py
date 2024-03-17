@@ -120,11 +120,11 @@ if __name__ == '__main__':
 
             elif option == '14':
 
-                from_network = 'bsc'
+                from_network = 'scroll'
                 to_network = ''
                 params = [from_network, to_network]
 
-                run_script(merkly_v2, 'bsc', '', params)
+                run_script(merkly_v2, 'scroll', '', params)
 
             elif option == '15':
                 interface_nitro_bridge()

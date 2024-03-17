@@ -1,47 +1,19 @@
 # How long sleep between tx
 MIN_SLEEP = 10
-MAX_SLEEP = 15
+MAX_SLEEP = 40
 
 USE_PROXY = False
 USE_SHUFFLE = True
 
 CHECK_GWEI  = True
-MAX_GWEI    = 55
+MAX_GWEI    = 32
 
 # IN %
 SLIPPAGE=1
-
+PRICE_IMPACT=4
 
 # False or '2023-08-15 22:36' format
-SCHEDULE_TIME = False
-
-
-USE_REF=False
-
-
-
-
-# How much should left on each wallet after swap/bridge/transfer
-MIN_BALANCE = {
-    'ethereum': 0.0019,
-    'optimism':  0.0002,
-    'bsc': 0.0002,
-    'polygon': 0.01,
-    'polygon_zkevm': '0.005-0.006',
-    'arbitrum': '0.00015-0.00017',
-    'avalanche': 0.001,
-    'fantom': 0.05,
-    'nova': 0.001,
-    'zksync': '0.005-0.006',
-    'coredao': 0.01,
-    'moonriver': 0.00001,
-    'metis': 0.00001,
-    'linea': '0.0008-0.00085',
-    'base': '0.005-0.006',
-    'scroll': '0.005-0.006',
-    'zora': '0.00015-0.00017',
-}
-
+SCHEDULE_TIME = '2024-02-16 3:10'
 
 # Minimal transaction amount
 MIN_TRANSACTION_AMOUNT = 0.0001
@@ -52,21 +24,7 @@ MAX_RETRIES = 2
 # okx | bitget
 DEFAULT_CEX='okx'
 
-
-GAS_LIMIT_COF=0.8
-
-INCH_API_KEY=''
-
-#==========ZK VOLUME CONFIG==============
-ZKSYNC_ETH_AMOUNT_PER_ACC = 2.2
-VOLUME_REPEAT=1
-MAX_SWAPS_PER_REPEAT=False
-# across|orbiter|random
-USE_BRIDGE='across'
-# arbitrum|optimism|random
-BRIDGE_NETWORK='arbitrum'
-# =======================================
-
+INCH_API_KEY='kMmV89HzM57Ft8ABOTLfAe1jQ0YXiQj9'
 UNUSED_REPEAT='1'
 
 
@@ -75,9 +33,36 @@ USE_CSV=True
 
 
 
+
+# How much should left on each wallet after swap/bridge/transfer
+MIN_BALANCE = {
+    'ethereum': 0.0019,
+    'optimism':  0.0002,
+    'bsc': 0.0002,
+    'polygon': 0.01,
+    'polygon_zkevm': '0.00015',
+    'arbitrum': '0.0008-0.00085',
+    'avalanche': 0.001,
+    'fantom': 0.05,
+    'nova': '0.00015',
+    'zksync': '0.0025-0.003',
+    'coredao': 0.01,
+    'moonriver': 0.00001,
+    'metis': 0.00001,
+    'linea': '0.0008-0.00085',
+    'zora': '0.0008-0.00085',
+    'base': '0.0008-0.00085',
+    'scroll':'0.002-0.0024',
+    'zkfair':'0.0001',
+}
+
+
+
+
+
 CHAINS = {
     'ethereum': {
-        'rpc': 'https://rpc.ankr.com/eth',
+        'rpc': 'https://ethereum-rpc.publicnode.com',
         'scan': 'https://etherscan.io/tx',
         'token': 'ETH',
         'chain_id': 1
@@ -95,7 +80,7 @@ CHAINS = {
         'chain_id': 56
     },
     'polygon': {
-        'rpc': 'https://polygon-mainnet.g.alchemy.com/v2/Y6gKhRokFU_8Qx2yG6-H_oFz98j26so2',
+        'rpc': 'https://polygon.blockpi.network/v1/rpc/public',
         'scan': 'https://polygonscan.com/tx',
         'token': 'MATIC',
         'chain_id': 137
@@ -131,7 +116,7 @@ CHAINS = {
         'chain_id': 42170
     },
     'zksync': {
-        'rpc': 'https://mainnet.era.zksync.io',
+        'rpc': 'https://zksync.meowrpc.com',
         'scan': 'https://explorer.zksync.io/tx',
         'token': 'ETH',
         'chain_id': 324
@@ -215,7 +200,8 @@ CHAINS = {
     'linea': {
         'rpc': 'https://linea-mainnet.infura.io/v3/7064390927dd49ebbf576d876293842d',
         'scan': 'https://lineascan.build/tx',
-        'token': 'ETH'
+        'token': 'ETH',
+        'chain_id':59144
     },
     'base': {
         'rpc': 'https://mainnet.base.org',
@@ -224,16 +210,64 @@ CHAINS = {
         'chain_id':8453
     },
     'scroll': {
-        'rpc': 'https://rpc.scroll.io',
+        'rpc': 'https://rpc.ankr.com/scroll/7bb32945254fe5721c5e8957c67779b637a8278acb4e51c340abef7b92c138ca',
         'scan': 'https://scrollscan.com/tx',
         'token': 'ETH',
         'chain_id': 534352
+    },
+    'zkfair': {
+        'rpc': 'https://rpc.zkfair.io',
+        'scan': 'https://scan.zkfair.io/tx',
+        'token': 'USDC',
+        'chain_id': 42766
+    },
+    'manta': {
+        'rpc': 'https://1rpc.io/manta',
+        'scan': 'https://manta.socialscan.io/tx',
+        'token': 'ETH',
+        'chain_id': 169
+    },
+    'mantle': {
+        'rpc': 'https://rpc.mantle.xyz',
+        'scan': 'https://explorer.mantle.xyz/tx',
+        'token': 'MNT',
+        'chain_id': 5000
+    },
+    'telos': {
+        'rpc': 'https://mainnet.telos.net/evm',
+        'scan': 'https://rpc.scroll.io/tx',
+        'token': 'TLOS',
+        'chain_id': 40
     },
     'zora': {
         'rpc': 'https://rpc.zora.energy',
         'scan': 'https://explorer.zora.energy/tx',
         'token': 'ETH',
         'chain_id': 7777777
+    },
+    'loot': {
+        'rpc': 'https://rpc.lootchain.com/http',
+        'scan': 'https://rpc.scroll.io/tx',
+        'token': 'AGLD',
+        'chain_id': 5151706
+    },
+    'conflux': {
+        'rpc': 'https://evm.confluxrpc.com',
+        'scan': 'https://evm.confluxscan.net/tx',
+        'token': 'CFX',
+        'chain_id': 1030
+    },
+    'astar': {
+        'rpc': 'https://evm.astar.network',
+        'scan': 'https://astar.subscan.io/tx',
+        'token': 'ASTR',
+        'chain_id': 592
+    },
+    'canto': {
+        'rpc': 'https://canto.gravitychain.io',
+        'scan': 'https://astar.subscan.io/tx',
+        'token': 'CANTO',
+        'chain_id': 7700
     },
 }
 
