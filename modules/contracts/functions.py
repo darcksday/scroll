@@ -281,6 +281,7 @@ def pump_claim_data(wallet):
 def claim_scroll(web3, private_key, _amount=0):
     wallet =web3.to_checksum_address( web3.eth.account.from_key(private_key).address)
     data=scroll_claim_data(wallet)
+    print(data)
     if not data['claimed_at']:
         amount=int(data['amount'])
         proof= data['proof']
@@ -307,12 +308,12 @@ def claim_scroll(web3, private_key, _amount=0):
         contract_txn = add_gas_limit(web3, contract_txn, chain)
         tx_hash = sign_tx(web3, contract_txn, private_key)
 
-        data = {
-            'wallet':wallet,
-            'amount':amount,
-
-        }
-        save_csv_marks(data,csv_filename='results/drop.csv')
+        # data = {
+        #     'wallet':wallet,
+        #     'amount':amount,
+        #
+        # }
+        # save_csv_marks(data,csv_filename='results/drop.csv')
         return tx_hash
 
 
