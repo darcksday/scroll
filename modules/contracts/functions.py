@@ -6,6 +6,7 @@ from loguru import logger
 from termcolor import cprint
 
 from config.settings import CHAINS
+from helpers.csv_helper import save_csv_marks
 from helpers.functions import get_min_balance, int_to_wei, wei_to_int, api_call, post_call, post_scroll_call
 from helpers.settings_helper import get_own_contract_address, get_ref_list
 from helpers.web3_helper import get_token_balance, check_data_token, add_gas_price, add_gas_limit, sign_tx
@@ -280,9 +281,11 @@ def pump_claim_data(wallet):
 def claim_scroll(web3, private_key, _amount=0):
     wallet =web3.to_checksum_address( web3.eth.account.from_key(private_key).address)
     data=scroll_claim_data(wallet)
+    print(data)
     if not data['claimed_at']:
         amount=int(data['amount'])
         proof= data['proof']
+
 
 
         logger.info(f"[{wallet}] Claim {wei_to_int(amount,18)}")
@@ -304,11 +307,18 @@ def claim_scroll(web3, private_key, _amount=0):
         contract_txn = add_gas_price(web3, contract_txn, chain)
         contract_txn = add_gas_limit(web3, contract_txn, chain)
         tx_hash = sign_tx(web3, contract_txn, private_key)
+
+        data = {
+            'wallet':wallet,
+            'amount':amount,
+
+        }
+        save_csv_marks(data,csv_filename='results/drop.csv')
         return tx_hash
 
 
     else:
-        logger.error(f'[{wallet}] | Already claimed')
+        raise Exception(f'SKIP. Already claimed')
 
 
 def scroll_claim_data(wallet):
