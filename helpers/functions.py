@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import time
@@ -75,7 +76,7 @@ def api_call(url, params=None, headers=None,retry=0):
 
     try:
         response = requests.get(url, params=params, headers=headers, proxies=proxies,verify=verify)
-
+        print(response.text)
         if response.status_code == 200:
             api_data = response.json()
             return api_data
@@ -93,6 +94,38 @@ def api_call(url, params=None, headers=None,retry=0):
             time.sleep(3)
             return api_call(url, params, headers, retry + 1)
 
+def post_scroll_call(url, params=None, headers=None):
+    proxies = []
+    verify = True
+
+    if USE_PROXY:
+        proxies = get_random_proxy()
+        ssl_path = 'config/ca.crt'
+        if os.path.isfile(ssl_path):
+            verify = ssl_path
+
+
+    try:
+        response = requests.post(url, json=params, headers=headers, proxies=proxies,verify=verify)
+
+        if response.status_code == 200:
+            # Step 1: Decode the byte string to a regular string
+            response_str = response.content.decode('utf-8')
+
+            # Step 2: Split the string by newlines to separate different parts (if necessary)
+            parts = response_str.split('\n')
+
+            # Step 3: Extract the relevant part containing JSON (the second part in this case)
+            json_part = parts[1].split(':', 1)[1]  # Extract the part after the colon
+
+            # Step 4: Load the JSON string into a Python dictionary
+            data = json.loads(json_part)
+            return data
+
+    except Exception as error:
+        cprint(f'Error: {error}, retry...', 'red')
+        time.sleep(3)
+        return post_call(url, params, headers)
 
 
 def post_call(url, params=None, headers=None):
