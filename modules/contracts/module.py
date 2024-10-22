@@ -26,6 +26,8 @@ def interface_contracts():
             cprint(f'5. Check Scroll Marks', 'yellow')
             cprint(f'6. Claim LZ', 'yellow')
             cprint(f'7. Withdraw from all contract', 'yellow')
+            cprint(f'8. Claim Scroll Pump', 'yellow')
+            cprint(f'9. Claim Scroll ', 'yellow')
 
 
 
@@ -93,6 +95,22 @@ def interface_contracts():
 
                         time.sleep(1)
                 break
+
+
+            elif option == '8':
+                run_script(claim_pump, 'scroll', 0, [])
+
+                break
+
+
+
+            elif option == '9':
+                run_script(claim_scroll, 'scroll', 0, [])
+
+                break
+
+
+
 
 
             else:

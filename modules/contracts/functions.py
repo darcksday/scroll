@@ -1,12 +1,15 @@
+import random
 from datetime import datetime
 
+from hexbytes import HexBytes
+from loguru import logger
 from termcolor import cprint
 
 from config.settings import CHAINS
-from helpers.functions import get_min_balance, int_to_wei, wei_to_int
-from helpers.settings_helper import get_own_contract_address
+from helpers.functions import get_min_balance, int_to_wei, wei_to_int, api_call, post_call, post_scroll_call
+from helpers.settings_helper import get_own_contract_address, get_ref_list
 from helpers.web3_helper import get_token_balance, check_data_token, add_gas_price, add_gas_limit, sign_tx
-from modules.contracts.config import DEPOSIT_ABI, STAKE_ABI
+from modules.contracts.config import DEPOSIT_ABI, STAKE_ABI, PUMP_CONTRACT, PUMP_ABI, SCROLL_ABI
 
 chain = 'scroll'
 
@@ -211,3 +214,117 @@ def withdraw_unused(web3, private_key, _amount,address_contract):
         contract_txn = add_gas_limit(web3, contract_txn, chain)
         tx_hash = sign_tx(web3, contract_txn, private_key)
         return tx_hash
+
+
+def claim_pump(web3, private_key, _amount=0):
+    wallet = web3.eth.account.from_key(private_key).address
+    data=pump_claim_data(wallet)
+    amout=int(data['amount'])
+
+    logger.info(f"[{wallet}] Claim {wei_to_int(amout,18)}")
+    contract = web3.eth.contract(address=PUMP_CONTRACT, abi=PUMP_ABI)
+
+    ref=random.choice(get_ref_list(path='config/pump_ref.txt'))
+    if ref:
+        ref=web3.to_checksum_address(ref)
+
+    print(amout,
+        data['sign'],
+        ref)
+    contract_txn = contract.functions.claim(
+        amout,
+        HexBytes( data['sign']),
+        ref
+    ).build_transaction(
+        {
+            'from': wallet,
+            'nonce': web3.eth.get_transaction_count(wallet),
+            'value': 0,
+            'gasPrice': 0,
+            'gas': 0,
+        })
+
+    contract_txn = add_gas_price(web3, contract_txn, chain)
+    contract_txn = add_gas_limit(web3, contract_txn, chain)
+    tx_hash = sign_tx(web3, contract_txn, private_key)
+    return tx_hash
+
+def pump_claim_data(wallet):
+    url='https://api.scrollpump.xyz/api/Airdrop/GetSign'
+    headers = {
+        'accept': 'application/json, text/plain, */*',
+        'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+        'origin': 'https://scrollpump.xyz',
+        'priority': 'u=1, i',
+        'referer': 'https://scrollpump.xyz/',
+        'sec-ch-ua': '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-site',
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+    }
+
+    params = {
+        'address': wallet,
+    }
+
+
+    data=api_call(url,params,headers)
+
+    return data.get('data')
+
+
+
+def claim_scroll(web3, private_key, _amount=0):
+    wallet =web3.to_checksum_address( web3.eth.account.from_key(private_key).address)
+    data=scroll_claim_data(wallet)
+    if not data['claimed_at']:
+        amount=int(data['amount'])
+        proof= data['proof']
+
+
+        logger.info(f"[{wallet}] Claim {wei_to_int(amount,18)}")
+        contract = web3.eth.contract(address='0xE8bE8eB940c0ca3BD19D911CD3bEBc97Bea0ED62', abi=SCROLL_ABI)
+        contract_txn = contract.functions.claim(
+            wallet,
+            amount,
+            proof
+
+        ).build_transaction(
+            {
+                'from': wallet,
+                'nonce': web3.eth.get_transaction_count(wallet),
+                'value': 0,
+                'gasPrice': 0,
+                'gas': 0,
+            })
+
+        contract_txn = add_gas_price(web3, contract_txn, chain)
+        contract_txn = add_gas_limit(web3, contract_txn, chain)
+        tx_hash = sign_tx(web3, contract_txn, private_key)
+        return tx_hash
+
+
+    else:
+        logger.error(f'[{wallet}] | Already claimed')
+
+
+def scroll_claim_data(wallet):
+    url='https://claim.scroll.io/?step=4'
+    headers = {
+        "Content-Type": "text/plain;charset=UTF-8",
+        "Next-Action": "2ab5dbb719cdef833b891dc475986d28393ae963"
+
+    }
+
+    params = [
+        wallet
+
+    ]
+
+
+    data=post_scroll_call(url,params,headers)
+
+    return data
