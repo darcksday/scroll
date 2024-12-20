@@ -27,7 +27,7 @@ def interface_contracts():
             cprint(f'6. Claim LZ', 'yellow')
             cprint(f'7. Withdraw from all contract', 'yellow')
             cprint(f'8. Claim Scroll Pump', 'yellow')
-            cprint(f'9. Claim Scroll ', 'yellow')
+            cprint(f'9. Claim Odos ', 'yellow')
 
 
 
@@ -105,7 +105,7 @@ def interface_contracts():
 
 
             elif option == '9':
-                run_script(claim_scroll, 'scroll', 0, [])
+                run_script(claim_odos, 'base', 0, [])
 
                 break
 

@@ -161,3 +161,25 @@ def post_call(url, params=None, headers=None):
         cprint(f'Error: {error}, retry...', 'red')
         time.sleep(3)
         return post_call(url, params, headers)
+
+
+def post_odos_call(url, params=None, headers=None):
+    proxies = []
+
+    if USE_PROXY:
+
+        proxies = get_random_proxy()
+
+    try:
+        response = requests.get(url,proxies=proxies)
+
+        if response.status_code == 200:
+            return response.json()
+
+
+        else:
+            return 0
+
+    except Exception as error:
+        cprint(f'Error: {error}, retry...', 'red')
+        return post_odos_call(url, params, headers)

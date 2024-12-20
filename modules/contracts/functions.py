@@ -1,16 +1,17 @@
+import json
 import random
 from datetime import datetime
 
+from eth_account.messages import encode_defunct, encode_structured_data
 from hexbytes import HexBytes
 from loguru import logger
 from termcolor import cprint
 
 from config.settings import CHAINS
-from helpers.csv_helper import save_csv_marks
-from helpers.functions import get_min_balance, int_to_wei, wei_to_int, api_call, post_call, post_scroll_call
+from helpers.functions import get_min_balance, int_to_wei, wei_to_int, api_call, post_call, post_scroll_call, post_odos_call
 from helpers.settings_helper import get_own_contract_address, get_ref_list
 from helpers.web3_helper import get_token_balance, check_data_token, add_gas_price, add_gas_limit, sign_tx
-from modules.contracts.config import DEPOSIT_ABI, STAKE_ABI, PUMP_CONTRACT, PUMP_ABI, SCROLL_ABI
+from modules.contracts.config import DEPOSIT_ABI, STAKE_ABI, PUMP_CONTRACT, PUMP_ABI, SCROLL_ABI, ODOS_ABI
 
 chain = 'scroll'
 
@@ -281,13 +282,9 @@ def pump_claim_data(wallet):
 def claim_scroll(web3, private_key, _amount=0):
     wallet =web3.to_checksum_address( web3.eth.account.from_key(private_key).address)
     data=scroll_claim_data(wallet)
-    if not data:
-        raise Exception(f'SKIP. Not Eglible')
-
     if not data['claimed_at']:
         amount=int(data['amount'])
         proof= data['proof']
-
 
 
         logger.info(f"[{wallet}] Claim {wei_to_int(amount,18)}")
@@ -309,18 +306,11 @@ def claim_scroll(web3, private_key, _amount=0):
         contract_txn = add_gas_price(web3, contract_txn, chain)
         contract_txn = add_gas_limit(web3, contract_txn, chain)
         tx_hash = sign_tx(web3, contract_txn, private_key)
-
-        # data = {
-        #     'wallet':wallet,
-        #     'amount':amount,
-        #
-        # }
-        # save_csv_marks(data,csv_filename='results/drop.csv')
         return tx_hash
 
 
     else:
-        raise Exception(f'SKIP. Already claimed')
+        logger.error(f'[{wallet}] | Already claimed')
 
 
 def scroll_claim_data(wallet):
@@ -340,3 +330,99 @@ def scroll_claim_data(wallet):
     data=post_scroll_call(url,params,headers)
 
     return data
+
+
+
+def odos_claim_data(wallet):
+    url=f"https://api.odos.xyz/loyalty/permits/8453/0xca73ed1815e5915489570014e024b7EbE65dE679/{wallet}"
+
+
+
+
+
+    data=post_odos_call(url)
+
+    return data
+
+
+
+def claim_odos(web3, private_key, _amount=0):
+    wallet =web3.to_checksum_address( web3.eth.account.from_key(private_key).address)
+    data=odos_claim_data(wallet)
+    text = 'By signing this, you agree to be bound by the terms set forth in the Odos DAO LLC Amended and Restated Operating Agreement (as amended from time to time), available at: https://docs.odos.xyz/home/dao/operating-agreement.'
+
+    if data:
+        typed_data = {
+            "domain": {
+                "name": "OdosDaoRegistry",
+                "version": "1",
+                "chainId": 8453,
+                "verifyingContract": "0x8bDA13Bc6DC08d4008C9f3A72C4572C98478502c",
+            },
+            "types": {
+                "EIP712Domain": [
+                    {"name": "name", "type": "string"},
+                    {"name": "version", "type": "string"},
+                    {"name": "chainId", "type": "uint256"},
+                    {"name": "verifyingContract", "type": "address"},
+                ],
+                "Registration": [
+                    {"name": "member", "type": "address"},
+                    {"name": "agreement", "type": "string"},
+                    {"name": "nonce", "type": "uint256"},
+                ],
+            },
+            "primaryType": "Registration",
+            "message": {
+                "member": wallet,
+                "agreement": "By signing this, you agree to be bound by the terms set forth in the Odos DAO LLC Amended and Restated Operating Agreement (as amended from time to time), available at: https://docs.odos.xyz/home/dao/operating-agreement.",
+                "nonce": 0,
+            },
+        }
+
+        data_encoded = encode_structured_data(typed_data)
+        signed_message = web3.eth.account.sign_message(data_encoded, private_key=private_key)
+
+
+
+
+        text_signature=signed_message.signature.hex()
+        proof=data['data']['signature']
+        data=data['data']['claim']
+        amount =int(data['amount'])
+        logger.info(f"[{wallet}] Claim {wei_to_int(amount,18)}")
+        contract = web3.eth.contract(address='0x4C8f8055D88705f52c9994969DDe61AB574895a3', abi=ODOS_ABI)
+        contract_txn = contract.functions.registerAndClaim(
+            (
+                wallet,
+            wallet,
+            data['payoutToken'],
+            amount,
+            int(data['nonce']),
+            int(data['deadline'])
+            ),
+            (
+            wallet,
+            text,
+            int(data['nonce']),
+            ),
+            proof,
+            text_signature
+
+        ).build_transaction(
+            {
+                'from': wallet,
+                'nonce': web3.eth.get_transaction_count(wallet),
+                'value': 0,
+                'gasPrice': 0,
+                'gas': 0,
+            })
+
+        contract_txn = add_gas_price(web3, contract_txn, chain)
+        contract_txn = add_gas_limit(web3, contract_txn, chain)
+        tx_hash = sign_tx(web3, contract_txn, private_key)
+        return tx_hash
+
+
+    else:
+        logger.error(f'[{wallet}] | Already claimed')

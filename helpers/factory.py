@@ -42,6 +42,8 @@ def call_function(item, method, rpc_chain, _amount, params=[], csv='', retry=0):
         logger.info(f'[{item["index"]}][{address}] | {method.__name__}')
 
         tx_hash = method(web3, item['private_key'], amount, *params)
+        if not tx_hash:
+            return
         tx_link = f'{CHAINS[rpc_chain]["scan"]}/{tx_hash}'
         time.sleep(2)
         status = check_status_tx(web3, rpc_chain, tx_hash)
